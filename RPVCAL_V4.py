@@ -7,17 +7,16 @@ st.set_page_config(
     page_title="מחולל נגדים וזרמים שלמים ", page_icon="⚡", layout="centered"
 )
 
-# הזרקת קוד HTML/JS תומך-Safari
+# הזרקת קוד HTML/JS תומך-Safari עם האייקון החדש שבחרת
 st.markdown(
     """
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="נגדים וזרמים">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2921/2921222.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3463/3463930.png">
     """,
     unsafe_allow_html=True,
 )
-
 st.title("⚡ מחולל נגדים, מתחים וזרמים שלמים ")
 st.markdown(
     "הזן את ההתנגדות השקולה ($R_t$), מספר הנגדים ומכפיל המתח לקבלת זרמים"
