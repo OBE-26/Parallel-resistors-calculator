@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered",
 )
 
-# הזרקת קוד HTML/JS תומך-Safari עם האייקון החדש שבחרת
+# הזרקת קוד HTML/JS תומך-Safari
 st.markdown(
     """
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,10 +19,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-st.title("⚡ מחולל נגדים, מתחים וזרמים שלמים ")
+
+st.title("⚡ מחולל נגדים, מתחים וזרמים שלמים")
 st.markdown(
-    "הזן את ההתנגדות השקולה ($R_t$), מספר הנגדים ומכפיל המתח לקבלת זרמים"
-    " גדולים ושלמים יותר בכל ענף."
+    "הזן את ההתנגדות השקולה ($R_t$), מספר הנגדים ומכפיל המתח לקבלת ניתוח"
+    " מלא ללא כפילויות."
 )
 
 with st.expander(
@@ -87,26 +88,36 @@ def calc_lcm_list(numbers):
 
 resistor_results = []
 current_results = []
+seen_combinations = set()  # קבוצה למניעת כפילויות
+
 patterns_for_n = PATTERNS.get(num_resistors, [])
 
-for p_idx, pattern in enumerate(patterns_for_n, 1):
+option_counter = 1
+
+for pattern in patterns_for_n:
   resistors = [float(r_eq * k) for k in pattern]
 
+  # בדיקה שכל הנגדים שלמים
   if all(r.is_integer() for r in resistors):
-    r_ints = [int(r) for r in resistors]
+    r_ints = sorted([int(r) for r in resistors])  # מיון הנגדים מהקטן לגדול
 
-    # חישוב מתח בסיס מינימלי ואז כפל במכפיל שבחר המשתמש
+    # מניעת כפילויות: אם הסט הטרנספורמטיבי כבר מופיע - נדלג עליו
+    combo_tuple = tuple(r_ints)
+    if combo_tuple in seen_combinations:
+      continue
+    seen_combinations.add(combo_tuple)
+
+    # חישוב מתח מומלץ (Vt) מותאם למכפיל
     lcm_val = calc_lcm_list(r_ints)
     base_voltage = (
         lcm_val / 2.0 if (lcm_val / 2.0).is_integer() else float(lcm_val)
     )
     v_total = base_voltage * voltage_multiplier
-
     v_formatted = int(v_total) if v_total.is_integer() else round(v_total, 1)
 
-    # 1. טבלת נגדים ומתח
+    # 1. טבלת נגדים ומתח (אופציה -> Vt -> Rt -> R1...)
     res_row = {
-        "אופציה": f"#{p_idx}",
+        "אופציה": f"#{option_counter}",
         "Vt (V)": str(v_formatted),
         "Rt (Ω)": str(r_eq),
     }
@@ -114,10 +125,11 @@ for p_idx, pattern in enumerate(patterns_for_n, 1):
       res_row[f"R{i} (Ω)"] = str(r_val)
     resistor_results.append(res_row)
 
-    # 2. טבלת זרמים
-    cur_row = {"אופציה": f"#{p_idx}"}
+    # 2. טבלת זרמים (אופציה -> Itotal -> I1...)
+    cur_row = {"אופציה": f"#{option_counter}"}
     temp_currents = {}
     total_current = 0
+
     for i, r_val in enumerate(r_ints, 1):
       i_val = v_total / r_val
       i_formatted = (
@@ -135,14 +147,21 @@ for p_idx, pattern in enumerate(patterns_for_n, 1):
     cur_row.update(temp_currents)
     current_results.append(cur_row)
 
+    option_counter += 1
+
 # הצגת התוצאות
 if resistor_results:
-  st.success(f"מצאנו {len(resistor_results)} שילובים תואמים!")
+  st.success(
+      f"מצאנו {len(resistor_results)} שילובים ייחודיים (ללא כפילויות בסדר"
+      " הנגדים)!"
+  )
 
+  # טבלה 1: נגדים ומתח
   st.subheader("📐 טבלת התנגדויות ומתח")
   df_resistors = pd.DataFrame(resistor_results).astype(str)
   st.dataframe(df_resistors, use_container_width=True, hide_index=True)
 
+  # טבלה 2: זרמים
   st.subheader("⚡ טבלת זרמים במעגל")
   df_currents = pd.DataFrame(current_results).astype(str)
   st.dataframe(df_currents, use_container_width=True, hide_index=True)
