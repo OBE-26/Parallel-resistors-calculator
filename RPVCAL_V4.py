@@ -4,7 +4,9 @@ import streamlit as st
 
 # הגדרת עיצוב הדף והתאמה למובייל
 st.set_page_config(
-    page_title="מחולל נגדים וזרמים שלמים ", page_icon="⚡", layout="centered"
+    page_title="מחולל נגדים וזרמים שלמים",
+    page_icon="https://cdn-icons-png.flaticon.com/512/3463/3463930.png",
+    layout="centered",
 )
 
 # הזרקת קוד HTML/JS תומך-Safari עם האייקון החדש שבחרת
