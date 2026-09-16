@@ -1,262 +1,195 @@
 import random
 import streamlit as st
 
-# הגדרות דף מותאמות למובייל, אייפד ומחשב
+# הגדרות דף 
 st.set_page_config(
     page_title="לומדים את לוח הכפל!", page_icon="✏️", layout="wide"
 )
 
-# הזרקת קוד HTML/CSS מותאם במיוחד ל-Safari באייפון ובאייפד
+# CSS מתקדם: טבלה שלא נשברת במסכים קטנים ואנימציית מבוך
 st.markdown(
     """
-    <!-- הגדרות תאימות ל-Safari באייפון/אייפד -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="לוח הכפל">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3426/3426653.png">
-
+    
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap');
     
     html, body, [class*="css"]  {
-        font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Rubik', -apple-system, sans-serif;
         direction: rtl;
         text-align: right;
         -webkit-tap-highlight-color: transparent;
     }
     
-    .stApp {
-        background-color: #f0f4f8;
-    }
+    .stApp { background-color: #f4f7f6; }
     
     .main-title {
-        font-size: 2.3rem;
-        color: #2c3e50;
-        text-align: center;
-        font-weight: 700;
-        margin-bottom: 0.2rem;
+        font-size: 2rem; color: #2c3e50; text-align: center; font-weight: 700;
     }
-    
     .subtitle {
-        font-size: 1.2rem;
-        color: #576574;
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-    
-    /* עיצוב כפתורים נגישים ונוחים למגע באייפון/אייפד */
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        padding: 0.6rem 1rem;
-        background-color: #2e86de;
-        color: white;
-        border: none;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        transition: all 0.2s ease;
-        -webkit-appearance: none;
-    }
-    
-    .stButton>button:hover, .stButton>button:active {
-        background-color: #10ac84;
-        transform: translateY(-2px);
-    }
-    
-    /* קופסאות משחק */
-    .game-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        margin-bottom: 1rem;
+        font-size: 1.1rem; color: #576574; text-align: center; margin-bottom: 1rem;
     }
 
-    /* עיצוב שדות קלט בטבלה - גודל 16px מונע זום אוטומטי ב-Safari במיקוד */
+    /* === קסם ה-CSS לטבלת 10x10 שלא נשברת לעולם באייפון === */
+    /* מכריח את העמודות של Streamlit להישאר בשורה אחת עם גלילה רוחבית */
+    div[data-testid="stHorizontalBlock"] {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 2px !important;
+        padding-bottom: 5px;
+    }
+    
+    div[data-testid="column"] {
+        min-width: 32px !important; /* מספיק צר כדי להיכנס למסך, מספיק רחב להקלדה */
+    }
+
+    /* עיצוב שדות הטבלה - מונע זום בספארי ומקטין ריווח */
     .stTextInput input {
         text-align: center;
         font-weight: bold;
-        font-size: 16px !important;
-        padding: 4px;
-        border-radius: 8px;
-        -webkit-appearance: none;
+        font-size: 16px !important; 
+        padding: 0px !important;
+        height: 35px;
+        border-radius: 6px;
+    }
+
+    /* === עיצוב המבוך המונפש === */
+    .maze-track {
+        position: relative;
+        height: 70px;
+        background: #e8f4f8;
+        border-radius: 35px;
+        border: 3px solid #b2bec3;
+        margin: 30px 0;
+        overflow: hidden;
+        box-shadow: inset 0 3px 6px rgba(0,0,0,0.1);
+    }
+    
+    .maze-character {
+        position: absolute;
+        top: 5px;
+        font-size: 40px;
+        transition: right 0.6s ease-in-out; /* אנימציית התנועה החלקה */
+        z-index: 10;
+    }
+
+    .maze-gate {
+        position: absolute;
+        top: 10px;
+        font-size: 35px;
+        z-index: 5;
+    }
+    
+    .maze-castle {
+        position: absolute;
+        left: 10px;
+        top: 5px;
+        font-size: 40px;
+        z-index: 5;
+    }
+
+    .game-card {
+        background: white; padding: 1rem; border-radius: 16px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 1rem;
+    }
+
+    .stButton>button {
+        width: 100%; border-radius: 12px; font-size: 1.1rem; font-weight: 600;
+        background-color: #2e86de; color: white; border: none;
     }
     </style>
 """,
     unsafe_allow_html=True,
 )
 
-# כותרת ראשית מנוקדת
-st.markdown(
-    '<div class="main-title">✨ לוּחַ הַכֶּפֶל הַקָּסוּם ✨</div>',
-    unsafe_allow_html=True,
-)
-st.markdown(
-    '<div class="subtitle">לומְדִים, מְתַרְגְּלִים וּמְשַׂחֲקִים בְּכֵף!</div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<div class="main-title">✨ לוּחַ הַכֶּפֶל הַקָּסוּם ✨</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">לומְדִים, מְתַרְגְּלִים וּמְשַׂחֲקִים בְּכֵף!</div>', unsafe_allow_html=True)
 
-# הסבר קצר להוספה למסך הבית באייפון
-with st.expander(
-    "📱 טיפ: איך להוסיף את האפליקציה למסך הבית באייפון / באייפד (Safari)",
-    expanded=False,
-):
-  st.markdown(
-      """
-        1. פתח/י את הקישור הזה בדפדפן **Safari**.
-        2. לחץ/צי עַל כַּפְתּוֹר הַ**שִׁיתּוּף (Share - המלבן עם החץ כלפי מעלה)**.
-        3. גְּלֹל/י לְמַטָּה וּבְחַר/י **"הוֹסֵף לְמָסָךְ הַבַּיִת" (Add to Home Screen)**.
-        4. לַחַץ/צי עַל **הוֹסֵף (Add)**.
-        """
-  )
-
-# לשוניות הניווט
 tab1, tab2, tab3, tab4 = st.tabs([
-    "🧩 לוּחַ כֶּפֶל לְהַשְׁלָמָה",
-    "⚡ תִּרְגּוּל מְהִיר",
-    "📖 שְׁאֵלוֹת מִלּוּלִיּוֹת",
-    "🏃‍♂️ מִשְׂחָק הַמַּבּוֹךְ (10 שְׁלָבִים)",
+    "🧩 לוּחַ כֶּפֶל", "⚡ תִּרְגּוּל מְהִיר", "📖 שְׁאֵלוֹת", "🏃 מִשְׂחָק הַמַּסְלוּל"
 ])
 
 # ==========================================
-# לשונית 1: לוח כפל להשלמה ובדיקה (טבלאי)
+# לשונית 1: לוח כפל 10x10 (גלילה אופקית מותאמת אישית)
 # ==========================================
 with tab1:
-  st.subheader("🧩 הַשְׁלָמַת לוּחַ הַכֶּפֶל")
-  st.write(
-      "מַלֵּא/י אֶת הַתְּשׁוּבוֹת שֶׁבִּרְצוֹנְךָ/ךְ בַּטַּבְלָה,"
-      ' וְלַחַץ/צי עַל **"בְּדוֹק/י אֶת הַתְּשׁוּבוֹת"** כְּדֵי'
-      " לִרְאוֹת אִם צָדַקְתָּ/תּ!"
-  )
-
-  cols_size = 10
-  rows_size = 10
+  st.subheader("🧩 הַשְׁלָמַת לוּחַ הַכֶּפֶל מָלֵא (10x10)")
+  st.write("מַלֵּא/י אֶת הַמִּשְׁבְּצוֹת, גְּלֹל/י הַצִּדָּה אִם הַמָּסָךְ קָטָן, וּבְדוֹק/י!")
 
   if "checked_grid" not in st.session_state:
     st.session_state.checked_grid = False
 
-  # כותרת עליונה של הטבלה
-  header_cols = st.columns([0.6] + [1] * cols_size)
-  header_cols[0].markdown(
-      "<h4 style='text-align:center; color:#2e86de;'>✕</h4>",
-      unsafe_allow_html=True,
-  )
-  for j in range(1, cols_size + 1):
-    header_cols[j].markdown(
-        f"<h4 style='text-align:center;'>{j}</h4>", unsafe_allow_html=True
-    )
+  # כותרות (1-10)
+  header_cols = st.columns(11)
+  header_cols[0].markdown("<h5 style='text-align:center; color:#2e86de;'>✕</h5>", unsafe_allow_html=True)
+  for j in range(1, 11):
+    header_cols[j].markdown(f"<h5 style='text-align:center;'>{j}</h5>", unsafe_allow_html=True)
 
   user_answers = {}
 
-  # יצירת שורות הטבלה
-  for i in range(1, rows_size + 1):
-    row_cols = st.columns([0.6] + [1] * cols_size)
-    row_cols[0].markdown(
-        f"<h4 style='text-align:center; margin-top:5px;'>{i}</h4>",
-        unsafe_allow_html=True,
-    )
-    for j in range(1, cols_size + 1):
-      key = f"cell_{i}_{j}"
-      val = row_cols[j].text_input(
-          "", key=key, label_visibility="collapsed", placeholder=""
-      )
+  # תוכן הטבלה
+  for i in range(1, 11):
+    row_cols = st.columns(11)
+    row_cols[0].markdown(f"<h5 style='text-align:center; margin-top:6px;'>{i}</h5>", unsafe_allow_html=True)
+    for j in range(1, 11):
+      val = row_cols[j].text_input("", key=f"cell_{i}_{j}", label_visibility="collapsed")
       if val.strip().isdigit():
         user_answers[(i, j)] = int(val.strip())
 
   st.write("")
-  col_btn1, col_btn2 = st.columns([1, 1])
-  with col_btn1:
-    if st.button("🔍 בְּדוֹק/י אֶת הַתְּשׁוּבוֹת"):
-      st.session_state.checked_grid = True
-
-  with col_btn2:
+  c_btn1, c_btn2 = st.columns(2)
+  with c_btn1:
+    if st.button("🔍 בְּדוֹק/י תְּשׁוּבוֹת"): st.session_state.checked_grid = True
+  with c_btn2:
     if st.button("🔄 נַקֵּה/י טַבְלָה"):
       for key in list(st.session_state.keys()):
-        if key.startswith("cell_"):
-          del st.session_state[key]
+        if key.startswith("cell_"): del st.session_state[key]
       st.session_state.checked_grid = False
       st.rerun()
 
-  # הצגת תוצאות הבדיקה
   if st.session_state.checked_grid:
     if not user_answers:
-      st.info("עֲדַיִן לֹא מִלֵּאתָ/תּ אף תְּשׁוּבָה בַּטַּבְלָה 🙂")
+      st.info("עֲדַיִן לֹא מִלֵּאתָ/תּ אף תְּשׁוּבָה 🙂")
     else:
-      correct_count = 0
-      wrong_details = []
-
-      for (i, j), ans in user_answers.items():
-        real_ans = i * j
-        if ans == real_ans:
-          correct_count += 1
-        else:
-          wrong_details.append(
-              f"תרגיל **{i} × {j}**: כָּתַבְתָּ/תּ **{ans}**, הַתְּשׁוּבָה"
-              f" הַנְּכוֹנָה הִיא **{real_ans}**"
-          )
-
-      if len(wrong_details) == 0:
+      correct = sum(1 for (i, j), ans in user_answers.items() if ans == i * j)
+      if correct == len(user_answers):
         st.balloons()
-        st.success(
-            f"🎉 כָּל הַכָּבוֹד! כָּל {correct_count} הַתְּשׁוּבוֹת שֶׁמִּלֵּאתָ/תּ"
-            " נְכוֹנוֹת בְּמַדְעָן!"
-        )
+        st.success(f"🎉 מֻשְׁלָם! עָנִיתָ/תּ עַל {correct} תְּשׁוּבוֹת נְכוֹנָה!")
       else:
-        st.warning(
-            f"עָנִיתָ/תּ עַל {correct_count} תְּשׁוּבוֹת נְכוֹנוֹת מִתּוֹךְ"
-            f" {len(user_answers)}."
-        )
-        st.error("הִנֵּה הַמְּקוֹמוֹת שֶׁכְּדַאי לְתַקֵּן:")
-        for w in wrong_details:
-          st.write(f"• {w}")
+        st.warning(f"עָנִיתָ/תּ עַל {correct} תְּשׁוּבוֹת נְכוֹנוֹת מִתּוֹךְ {len(user_answers)}.")
+        for (i, j), ans in user_answers.items():
+          if ans != i * j:
+            st.write(f"• תרגיל **{i} × {j}**: כָּתַבְתָּ/תּ **{ans}**, התשובה היא **{i*j}**")
 
 # ==========================================
 # לשונית 2: תרגול מהיר
 # ==========================================
 with tab2:
   st.subheader("⚡ תִּרְגּוּל מְהִיר")
-
   if "q_num1" not in st.session_state:
     st.session_state.q_num1 = random.randint(2, 10)
     st.session_state.q_num2 = random.randint(2, 10)
     st.session_state.score = 0
 
-  n1 = st.session_state.q_num1
-  n2 = st.session_state.q_num2
-
-  st.markdown(
-      f'<div class="game-card" style="text-align: center;">'
-      f"<h2>כַּמָּה זֶה?</h2>"
-      f'<h1 style="font-size: 3.5rem; color: #10ac84;">{n1} × {n2} = ?</h1>'
-      f"</div>",
-      unsafe_allow_html=True,
-  )
-
-  user_quick_ans = st.text_input(
-      "כְּתֹב/י אֶת הַתְּשׁוּבָה שֶׁלְּךָ/ךְ כאן:", key="quick_ans"
-  )
+  n1, n2 = st.session_state.q_num1, st.session_state.q_num2
+  st.markdown(f'<div class="game-card" style="text-align:center;"><h2>כַּמָּה זֶה?</h2><h1 style="font-size:3.5rem; color:#10ac84;">{n1} × {n2} = ?</h1></div>', unsafe_allow_html=True)
+  
+  user_quick_ans = st.text_input("כְּתֹב/י אֶת הַתְּשׁוּבָה שֶׁלְּךָ/ךְ כאן:", key="quick_ans")
 
   if st.button("בְּדוֹק/י תְּשׁוּבָה"):
-    if user_quick_ans.strip().isdigit():
-      ans = int(user_quick_ans.strip())
-      if ans == n1 * n2:
-        st.balloons()
-        st.success("🎉 נָכוֹן מְאֹד! כָּל הַכָּבוֹד!")
-        st.session_state.score += 1
-        st.session_state.q_num1 = random.randint(2, 10)
-        st.session_state.q_num2 = random.randint(2, 10)
-      else:
-        st.error(
-            f"לֹא נוֹרָא! {n1} × {n2} זה **{n1*n2}**. נַסֵּה/י אֶת הַתַּרְגִּיל"
-            " הַבָּאָה!"
-        )
-        st.session_state.q_num1 = random.randint(2, 10)
-        st.session_state.q_num2 = random.randint(2, 10)
+    if user_quick_ans.strip().isdigit() and int(user_quick_ans.strip()) == n1 * n2:
+      st.balloons()
+      st.success("🎉 נָכוֹן מְאֹד!")
+      st.session_state.score += 1
+      st.session_state.q_num1 = random.randint(2, 10)
+      st.session_state.q_num2 = random.randint(2, 10)
     else:
-      st.warning("אָנָּא כְּתֹב/י מִסְפָּר.")
-
+      st.error(f"לֹא נוֹרָא! {n1} × {n2} זה **{n1*n2}**. נַסֵּה/י שוּב בַּתַּרְגִּיל הַבָּא!")
+      st.session_state.q_num1 = random.randint(2, 10)
+      st.session_state.q_num2 = random.randint(2, 10)
   st.metric("נְקֻדּוֹת שֶׁצָּבַרְתָּ/תּ", st.session_state.score)
 
 # ==========================================
@@ -264,173 +197,109 @@ with tab2:
 # ==========================================
 with tab3:
   st.subheader("📖 שְׁאֵלוֹת מִלּוּלִיּוֹת")
-
-  WORD_PROBLEMS = [
-      {
-          "q": (
-              "לְשָׁקֵד יֵשׁ 4 חֲבִילוֹת שֶׁל צְבָעִים. בְּכָל חֲבִילָה יֵשׁ 6"
-              " צְבָעִים. כַּמָּה צְבָעִים יֵשׁ לְשָׁקֵד בְּסַךְ הַכֹּל?"
-          ),
-          "n1": 4,
-          "n2": 6,
-          "ans": 24,
-      },
-      {
-          "q": (
-              "בַּגִּנָּה יֵשׁ 5 עֲרוּגוֹת. בְּכָל עֲרוּגָה שְׁתוּלִים 8"
-              " פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?"
-          ),
-          "n1": 5,
-          "n2": 8,
-          "ans": 40,
-      },
-      {
-          "q": (
-              "אִמָּא קָנְתָה 7 שַׂקִּיּוֹת תַּפּוּחִים. בְּכָל שַׂקִּית יֵשׁ"
-              " 3 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?"
-          ),
-          "n1": 7,
-          "n2": 3,
-          "ans": 21,
-      },
-      {
-          "q": (
-              "בְּכִתָּה יֵשׁ 9 שֻׁלְחָנוֹת. סְבִיב כָּל שֻׁלְחָן יוֹשְׁבִים 4"
-              " יְלָדִים. כַּמָּה יְלָדִים יוֹשְׁבִים בַּכִּתָּה?"
-          ),
-          "n1": 9,
-          "n2": 4,
-          "ans": 36,
-      },
-      {
-          "q": (
-              "דָּנִי קָנָה 8 מַחְבָּרוֹת. כָּל מַחְבֶּרֶת עוֹלָה 5 שְׁקָלִים."
-              " כַּמָּה שִׁלֵּם דָּנִי בְּסַךְ הַכֹּל?"
-          ),
-          "n1": 8,
-          "n2": 5,
-          "ans": 40,
-      },
+  WORDS = [
+      {"q": "לְשָׁקֵד יֵשׁ 4 חֲבִילוֹת שֶׁל צְבָעִים. בְּכָל חֲבִילָה יֵשׁ 6 צְבָעִים. כַּמָּה צְבָעִים יֵשׁ לְשָׁקֵד?", "ans": 24},
+      {"q": "בַּגִּנָּה יֵשׁ 5 עֲרוּגוֹת. בְּכָל עֲרוּגָה שְׁתוּלִים 8 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?", "ans": 40},
   ]
+  if "wp_idx" not in st.session_state: st.session_state.wp_idx = 0
+  cp = WORDS[st.session_state.wp_idx]
 
-  if "wp_idx" not in st.session_state:
-    st.session_state.wp_idx = 0
-
-  current_p = WORD_PROBLEMS[st.session_state.wp_idx]
-
-  st.markdown(
-      f'<div class="game-card">'
-      f"<h3>שאלה מס׳ {st.session_state.wp_idx + 1}:</h3>"
-      f'<p style="font-size: 1.3rem;">{current_p["q"]}</p>'
-      f"</div>",
-      unsafe_allow_html=True,
-  )
-
+  st.markdown(f'<div class="game-card"><h3>שאלה מס׳ {st.session_state.wp_idx + 1}:</h3><p style="font-size:1.2rem;">{cp["q"]}</p></div>', unsafe_allow_html=True)
+  
   wp_ans = st.text_input("תְּשׁוּבָה:", key=f"wp_{st.session_state.wp_idx}")
-
-  if st.button("בְּדוֹק/י שְׁאָלָה מִלּוּלִית"):
-    if wp_ans.strip().isdigit():
-      if int(wp_ans.strip()) == current_p["ans"]:
-        st.balloons()
-        st.success(
-            f"🎉 נָכוֹן מְאֹד! הַתַּרְגִּיל הוּא {current_p['n1']} ×"
-            f" {current_p['n2']} = {current_p['ans']}"
-        )
-      else:
-        st.error(
-            f"לֹא מְדֻיָּק. הַתַּרְגִּיל הוּא {current_p['n1']} ×"
-            f" {current_p['n2']} = {current_p['ans']}."
-        )
+  if st.button("בְּדוֹק/י"):
+    if wp_ans.strip().isdigit() and int(wp_ans.strip()) == cp["ans"]:
+      st.balloons(); st.success("🎉 צָדַקְתָּ/תּ!")
     else:
-      st.warning("אָנָּא כְּתֹב/י מִסְפָּר.")
-
-  if st.button("הַשְּׁאָלָה הַבָּאָה ⬅️"):
-    st.session_state.wp_idx = (st.session_state.wp_idx + 1) % len(
-        WORD_PROBLEMS
-    )
+      st.error(f"הַתְּשׁוּבָה הִיא {cp['ans']}.")
+  if st.button("שְׁאֵלָה הַבָּאָה ⬅️"):
+    st.session_state.wp_idx = (st.session_state.wp_idx + 1) % len(WORDS)
     st.rerun()
 
 # ==========================================
-# לשונית 4: משחק המבוך (10 שלבים עם אנימציית הליכה)
+# לשונית 4: משחק המסלול (Side-Scroller Animation)
 # ==========================================
 with tab4:
-  st.subheader("🏃‍♂️ מִשְׂחָק הַמַּבּוֹךְ – הַמַּסָּע לָאַרְמוֹן (10 שְׁלָבִים)")
-  st.write(
-      "הַזֵּז/י אֶת הַיֶּלֶד צַעַד אַחַר צַעַד עַל יְדֵי פִּתְרוֹן"
-      " תַּרְגִּילֵי כֶּפֶל עד לְהַגָּעָה לָאַרְמוֹן!"
-  )
+  st.subheader("🏃 מִשְׂחָק הַמַּסְלוּל – הַדֶּרֶךְ לָאַרְמוֹן")
+  
+  if "pos" not in st.session_state:
+    st.session_state.pos = 0          # מיקום הדמות (0 עד 10)
+    st.session_state.gates = {3: False, 7: False} # שערים נעולים במיקומים 3 ו-7
+    st.session_state.q_gate1 = (random.randint(3, 7), random.randint(4, 9))
+    st.session_state.q_gate2 = (random.randint(6, 9), random.randint(6, 9))
 
-  # 10 שלבים מובנים
-  MAZE_STEPS = [
-      {"n1": 2, "n2": 3, "name": "שַׁעַר 1"},
-      {"n1": 3, "n2": 4, "name": "שַׁעַר 2"},
-      {"n1": 4, "n2": 5, "name": "שַׁעַר 3"},
-      {"n1": 5, "n2": 6, "name": "שַׁעַר 4"},
-      {"n1": 6, "n2": 7, "name": "שַׁעַר 5"},
-      {"n1": 7, "n2": 7, "name": "שַׁעַר 6"},
-      {"n1": 8, "n2": 6, "name": "שַׁעַר 7"},
-      {"n1": 9, "n2": 5, "name": "שַׁעַר 8"},
-      {"n1": 8, "n2": 9, "name": "שַׁעַר 9"},
-      {"n1": 9, "n2": 9, "name": "שַׁעַר 10 – הָאַרְמוֹן!"},
-  ]
+  pos = st.session_state.pos
+  gates = st.session_state.gates
 
-  if "maze_step" not in st.session_state:
-    st.session_state.maze_step = 0
+  # ציור מסלול האנימציה (Track)
+  # אחוז ההתקדמות (מימין לשמאל: pos=0 זה 0%, pos=10 זה 90% בערך כדי לא לדרוס את הארמון)
+  progress_percent = pos * 9 
+  
+  gate1_icon = "🔓" if gates[3] else "🚪"
+  gate2_icon = "🔓" if gates[7] else "🚪"
 
-  curr_step = st.session_state.maze_step
-  total_steps = len(MAZE_STEPS)
+  st.markdown(f"""
+    <div class="maze-track">
+        <!-- השחקנית מתקדמת מימין לשמאל -->
+        <div class="maze-character" style="right: {progress_percent}%;">👧</div>
+        <!-- שער 1 (מיקום 30%) -->
+        <div class="maze-gate" style="right: 27%; filter: grayscale({'0' if gates[3] else '1'});">{gate1_icon}</div>
+        <!-- שער 2 (מיקום 70%) -->
+        <div class="maze-gate" style="right: 63%; filter: grayscale({'0' if gates[7] else '1'});">{gate2_icon}</div>
+        <!-- היעד (הארמון) -->
+        <div class="maze-castle">🏰</div>
+    </div>
+  """, unsafe_allow_html=True)
 
-  # תצוגת מסלול ההליכה (מותאמת לרזולוציות מובייל ו-Safari)
-  path_html = "<div style='display:flex; justify-content:space-between; align-items:center; background:white; padding:15px; border-radius:15px; font-size:1.3rem; border:2px solid #e0e0e0; margin-bottom:15px; overflow-x:auto; -webkit-overflow-scrolling: touch;'>"
+  # מערכת התנועה
+  col_btn_r, col_btn_l = st.columns(2)
+  
+  with col_btn_r:
+    if st.button("➡️ זְוּז/י אָחוֹרָה (יָמִינָה)"):
+      if pos > 0:
+        st.session_state.pos -= 1
+        st.rerun()
+  
+  with col_btn_l:
+    if st.button("⬅️ זְוּז/י קָדִימָה (שְׂמֹאלָה)"):
+      # בדיקה אם יש שער נעול לפני שזזים קדימה
+      if pos == 2 and not gates[3]:
+        st.warning("עֲצֹר/רִי! יֵשׁ שַׁעַר נָעוּל לְפָנֶיךָ/ךְ. עֲנֵה/י עַל הַחִידָה לְמַטָּה כְּדֵי לִפְתֹּחַ אוֹתוֹ.")
+      elif pos == 6 and not gates[7]:
+        st.warning("עֲצֹר/רִי! יֵשׁ עוֹד שַׁעַר נָעוּל. עֲנֵה/י עַל הַחִידָה לְמַטָּה.")
+      elif pos < 10:
+        st.session_state.pos += 1
+        st.rerun()
 
-  for idx in range(total_steps):
-    if idx < curr_step:
-      path_html += "<span style='opacity:0.6;'>🟢</span>"
-    elif idx == curr_step:
-      path_html += (
-          "<span style='font-size:2rem; transform:scale(1.2);"
-          " display:inline-block;'>👦</span>"
-      )
-    else:
-      path_html += "<span style='opacity:0.3;'>⚪</span>"
-
-  path_html += "<span>🏰</span></div>"
-  st.markdown(path_html, unsafe_allow_html=True)
-
-  if curr_step < total_steps:
-    step_data = MAZE_STEPS[curr_step]
-    n1, n2 = step_data["n1"], step_data["n2"]
-
-    st.info(f"📍 שְׁלָב {curr_step + 1} מִתּוֹךְ {total_steps}: {step_data['name']}")
-
-    st.markdown(
-        f'<div class="game-card" style="text-align:center;">'
-        f'<h2>כְּדֵי לִצְעֹד צַעַד קָדִימָה, פְּתֹר/י:</h2>'
-        f'<h1 style="font-size:3rem; color:#e67e22;">{n1} × {n2} = ?</h1>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-
-    maze_ans = st.text_input("תְּשׁוּבָה:", key=f"maze_ans_{curr_step}")
-
-    if st.button("צְעַד/י קָדִימָה! 🚶‍♂️"):
-      if maze_ans.strip().isdigit() and int(maze_ans.strip()) == n1 * n2:
-        st.balloons()
-        st.success("🔓 נָכוֹן מְאֹד! הַיֶּלֶד צָעַד צַעַד קָדִימָה!")
-        st.session_state.maze_step += 1
+  # הצגת שאלות כפל לפני שערים
+  if pos == 2 and not gates[3]:
+    n1, n2 = st.session_state.q_gate1
+    st.markdown(f'<div class="game-card" style="text-align:center;"><h3>🔑 חִידָה לִפְתִיחַת הַשַּׁעַר הָרִאשׁוֹן:</h3><h2 style="color:#e67e22;">{n1} × {n2} = ?</h2></div>', unsafe_allow_html=True)
+    ans1 = st.text_input("תְּשׁוּבָה:", key="ans_g1")
+    if st.button("פְּתַח/י שַׁעַר"):
+      if ans1.strip().isdigit() and int(ans1.strip()) == n1 * n2:
+        st.session_state.gates[3] = True
+        st.session_state.pos += 1
         st.rerun()
       else:
-        st.error("הַתְּשׁוּבָה לֹא מְדֻיֶּקֶת... נַסֵּה/י שוּב!")
-  else:
+        st.error("טָעוּת! נַסֵּה/י שוּב.")
+
+  if pos == 6 and not gates[7]:
+    n1, n2 = st.session_state.q_gate2
+    st.markdown(f'<div class="game-card" style="text-align:center;"><h3>🔑 חִידָה לִפְתִיחַת הַשַּׁעַר הַשֵּׁנִי:</h3><h2 style="color:#e67e22;">{n1} × {n2} = ?</h2></div>', unsafe_allow_html=True)
+    ans2 = st.text_input("תְּשׁוּבָה:", key="ans_g2")
+    if st.button("פְּתַח/י שַׁעַר"):
+      if ans2.strip().isdigit() and int(ans2.strip()) == n1 * n2:
+        st.session_state.gates[7] = True
+        st.session_state.pos += 1
+        st.rerun()
+      else:
+        st.error("טָעוּת! נַסֵּה/י שוּב.")
+
+  # מסך ניצחון
+  if pos == 10:
     st.balloons()
-    st.markdown(
-        '<div class="game-card" style="text-align:center;">'
-        '<h2>👑 כָּל הַכָּבוֹד! הַיֶּלֶד הִגִּיעַ לָאַרְמוֹן! 👑</h2>'
-        '<p style="font-size:1.3rem;">פָּתַחְתָּ/תּ אֶת כָּל 10 הַשְּׁעָרִים'
-        ' בְּהַצְלָחָה רַבָּה!</p>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    if st.button("הַתְחֵל/י מִשְׂחָק חָדָשׁ 🔄"):
-      st.session_state.maze_step = 0
+    st.success("👑 כָּל הַכָּבוֹד! הִגַּעְתָּ/תּ לָאַרְמוֹן בְּהַצְלָחָה!")
+    if st.button("שַׂחֵק/י שׁוּב 🔄"):
+      del st.session_state.pos
       st.rerun()
