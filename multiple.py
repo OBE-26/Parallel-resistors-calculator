@@ -1,520 +1,11 @@
-"""Shaked's classroom multiplication app, version 4.1.
-
-Run: streamlit run multiple.py
-Production: set SHAKED_DATABASE_URL in Streamlit Secrets to a dedicated PostgreSQL database.
-Local test only: set SHAKED_DEV_DB to a writable SQLite file path.
-All grading, accounts, PIN hashes, progress and averages are managed by the server.
-The complete 200-question bank and responsive frontend are embedded in this file.
+"""Personal multiplication game for Shaked, version 5.
+Run with: streamlit run multiple.py
+All progress stays in the current browser; there are no accounts or database settings.
 """
-"""A fixed, numbered bank: 80 beginner, 60 intermediate, 60 advanced stories."""
-
-STORY_TEMPLATES = [
-    # Level A: one clearly stated collection of equal groups.
-    (0, "יֵשׁ {a} שַׂקִּיּוֹת. בְּכָל שַׂקִּית {b} תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "עַל הַשֻּׁלְחָן {a} צַלָּחוֹת. בְּכָל צַלַּחַת {b} עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "בַּגִּנָּה {a} שׁוּרוֹת. בְּכָל שׁוּרָה {b} פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?"),
-    (0, "יֵשׁ {a} קֻפְסָאוֹת. בְּכָל קֻפְסָה {b} עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "יֵשׁ {a} יְלָדִים. כָּל יֶלֶד מְקַבֵּל {b} בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?"),
-    (0, "בַּסַּל {a} חֲבִילוֹת. בְּכָל חֲבִילָה {b} לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?"),
-    (0, "יֵשׁ {a} דַּפִּים. עַל כָּל דַּף {b} מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "יֵשׁ {a} סַלִּים. בְּכָל סַל {b} כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?"),
-    (0, "בַּסִּפְרִיָּה {a} מַדָּפִים. עַל כָּל מַדָּף {b} סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?"),
-    (0, "בַּיַּעַר {a} עֵצִים. עַל כָּל עֵץ {b} צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?"),
-    (0, "יֵשׁ {a} שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן {b} כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "יֵשׁ {a} צְמִידִים. בְּכָל צָמִיד {b} חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?"),
-    (0, "יֵשׁ {a} קַרְטוֹנִים. בְּכָל קַרְטוֹן {b} בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "בַּמִּשְׂחָק {a} מִגְדָּלִים. בְּכָל מִגְדָּל {b} קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (0, "יֵשׁ {a} זֵרִים. בְּכָל זֵר {b} פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?"),
-    (0, "יֵשׁ {a} אֲרִיזוֹת. בְּכָל אֲרִיזָה {b} קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?"),
-    # Level B: varied multiplication facts, all factors at most ten.
-    (1, "לַהַצָּגָה הֵכִינוּ {a} שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה {b} כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?"),
-    (1, "בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־{b} תְּמוּנוֹת. מִלְּאוּ {a} עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?"),
-    (1, "בְּמֶשֶׁךְ {a} יָמִים קָרְאוּ בְּכָל יוֹם {b} עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?"),
-    (1, "לְכָל קְבוּצָה מְחַלְּקִים {b} כַּרְטִיסִים. בַּכִּתָּה יֵשׁ {a} קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?"),
-    (1, "בַּמַּאֲפִיָּה אוֹפִים {a} מַגָּשִׁים. עַל כָּל מַגָּשׁ {b} מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?"),
-    (1, "לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים {b} דַּפִּים. בַּחֻג {a} מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?"),
-    (1, "בַּחֲנוּת יֵשׁ {a} מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף {b} צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?"),
-    (1, "בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ {b} תַּחֲנוֹת. בָּנוּ {a} מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?"),
-    (1, "בְּכָל קֻפְסַת יְצִירָה יֵשׁ {b} מִכְחוֹלִים. הֵבִיאוּ {a} קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?"),
-    (1, "לְכָל שֻׁלְחָן מְכִינִים {b} מַפִּיּוֹת. בָּאוּלָם {a} שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?"),
-    (1, "הַגַּנָּן שָׁתַל {a} שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה {b} שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?"),
-    (1, "בְּכָל תֵּבָה יֵשׁ {b} אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ {a} תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?"),
-    # Level C: infer equal groups from a longer context. No extra operation is needed.
-    (2, "לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־{b} טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת {a} שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?"),
-    (2, "בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־{b} נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־{a} מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?"),
-    (2, "מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל {b} כַּרְטִיסִים. הַמּוֹרָה קָנְתָה {a} חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?"),
-    (2, "לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ {b} חֲלָקִים. הַכִּתָּה בּוֹנָה {a} דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?"),
-    (2, "בְּלֻחַ הַתְּמוּנוֹת יֵשׁ {a} שׁוּרוֹת, וּבְכָל שׁוּרָה {b} מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?"),
-    (2, "בְּתַחֲרוּת יֵשׁ {a} קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה {b} יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?"),
-    (2, "מְסַדְּרִים {a} קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: {b}. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?"),
-    (2, "בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת {b} תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ {a} יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?"),
-    (2, "לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים {b} צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת {a} תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?"),
-    (2, "בְּסֵפֶר יֵשׁ {a} פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל {b} עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?"),
-    (2, "רוֹצִים לְמַלֵּא {a} מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־{b} מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?"),
-    (2, "בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים {b} אֲבָנִים. מְשַׂחֲקִים {a} סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?"),
-]
-
-def build_word_bank():
-    pairs = {
-        0: [(a,b) for a in (2,3,4,5) for b in range(2,6)],
-        1: [(a,b) for a in range(2,11) for b in range(2,11)],
-        2: [(a,b) for a in range(6,11) for b in range(3,11)],
-    }
-    bank=[]
-    for t,(level,template) in enumerate(STORY_TEMPLATES):
-        choices=pairs[level]
-        for variant in range(5):
-            a,b=choices[(t*7+variant*3)%len(choices)]
-            bank.append(dict(id=f'w{len(bank)+1:03}',level=level,text=template.format(a=a,b=b),a=a,b=b))
-    assert len(bank)==200
-    assert len({q['text'] for q in bank})==200
-    return bank
-
-WORD_BANK=build_word_bank()
-WORDS_BY_ID={q['id']:q for q in WORD_BANK}
-
-
-"""Server-owned accounts, attempts, grading and shared class leaderboards."""
-import hashlib
-import hmac
-import json
-import math
-import os
-import random
-import re
-import secrets
-import sqlite3
-import time
-import unicodedata
-import uuid
-from contextlib import contextmanager
 from pathlib import Path
-
-
-
-GAME_TOTALS = {'quick': (20,20,20), 'words': (20,20,20), 'maze': (10,15,20)}
-ACTIVITIES = ('quick','words','maze','table')
-RNG = random.SystemRandom()
-PIN_ITERATIONS = 310_000
-
-class UserError(Exception):
-    """A safe, user-facing validation error. Never includes credentials."""
-
-def canonical(text):
-    text=unicodedata.normalize('NFKC', str(text))
-    text=''.join(c for c in text if not unicodedata.combining(c))
-    return ' '.join(text.split()).casefold()
-
-def clean_name(value,label,maxlen=32):
-    if not isinstance(value,str): raise UserError('יֵשׁ לְמַלֵּא אֶת כָּל הַפְּרָטִים.')
-    value=' '.join(unicodedata.normalize('NFKC',value).split())
-    if not 1<=len(value)<=maxlen or not any(c.isalnum() for c in value) or any(unicodedata.category(c)[0] not in 'LMN' and c not in " -'׳״." for c in value):
-        raise UserError(f'{label}: נַקְלִיד טֶקְסְט קָצָר וְתַקִּין.')
-    return value
-
-def canonical_class(text):
-    return re.sub(r"[\s'\"׳״.\-]",'',canonical(text))
-
-def identity(first,last,school_class):
-    return hashlib.sha256('\x1f'.join((canonical(first),canonical(last),canonical_class(school_class))).encode()).hexdigest()
-
-def pin_hash(pin,salt):
-    return hashlib.pbkdf2_hmac('sha256',pin.encode(),bytes.fromhex(salt),PIN_ITERATIONS).hex()
-
-def encode(value): return json.dumps(value,ensure_ascii=False,separators=(',',':'))
-
-def parse_number(value):
-    if not isinstance(value,str) or not re.fullmatch(r'[0-9]{1,3}',value.strip()):
-        raise UserError('נַקְלִיד מִסְפָּר שָׁלֵם. הַנִּסָּיוֹן לֹא נִסְפַּר.')
-    return int(value.strip())
-
-class Database:
-    def __init__(self,url=None,dev_path=None):
-        if not url and not dev_path:
-            raise ValueError('A dedicated database connection must be configured.')
-        self.url=url
-        self.dev_path=str(dev_path) if dev_path else None
-        self.pg=bool(url)
-
-    @contextmanager
-    def transaction(self):
-        if self.pg:
-            import psycopg
-            from psycopg.rows import dict_row
-            con=psycopg.connect(self.url,connect_timeout=10,sslmode='require',row_factory=dict_row)
-            con.execute('SET search_path TO shaked_private')
-        else:
-            Path(self.dev_path).parent.mkdir(parents=True,exist_ok=True)
-            con=sqlite3.connect(self.dev_path,timeout=20)
-            con.row_factory=sqlite3.Row
-            con.execute('PRAGMA foreign_keys=ON')
-            con.execute('BEGIN IMMEDIATE')
-        try:
-            yield Connection(con,self.pg)
-            con.commit()
-        except Exception:
-            con.rollback()
-            raise
-        finally:
-            con.close()
-
-    def initialize(self):
-        # A private PostgreSQL schema is never exposed through Supabase's public Data API.
-        if self.pg:
-            import psycopg
-            with psycopg.connect(self.url,connect_timeout=10,sslmode='require') as con:
-                con.execute('CREATE SCHEMA IF NOT EXISTS shaked_private')
-                con.execute('REVOKE ALL ON SCHEMA shaked_private FROM PUBLIC')
-        with self.transaction() as c:
-            for sql in [
-                '''CREATE TABLE IF NOT EXISTS players (
-                    id TEXT PRIMARY KEY, identity_key TEXT NOT NULL UNIQUE,
-                    first_name TEXT NOT NULL,last_name TEXT NOT NULL,class_name TEXT NOT NULL,
-                    class_key TEXT NOT NULL,pin_salt TEXT NOT NULL,pin_hash TEXT NOT NULL,
-                    created DOUBLE PRECISION NOT NULL)''',
-                '''CREATE TABLE IF NOT EXISTS login_limits (
-                    identity_key TEXT PRIMARY KEY, failures INTEGER NOT NULL,
-                    window_start DOUBLE PRECISION NOT NULL,blocked_until DOUBLE PRECISION NOT NULL)''',
-                '''CREATE TABLE IF NOT EXISTS runs (
-                    id TEXT PRIMARY KEY,player_id TEXT NOT NULL REFERENCES players(id),
-                    activity TEXT NOT NULL,level INTEGER NOT NULL,status TEXT NOT NULL,
-                    data TEXT NOT NULL,created DOUBLE PRECISION NOT NULL,updated DOUBLE PRECISION NOT NULL)''',
-                '''CREATE TABLE IF NOT EXISTS results (
-                    run_id TEXT PRIMARY KEY REFERENCES runs(id),player_id TEXT NOT NULL REFERENCES players(id),
-                    activity TEXT NOT NULL,level INTEGER NOT NULL,score DOUBLE PRECISION NOT NULL,
-                    first_correct INTEGER NOT NULL,total INTEGER NOT NULL,passed INTEGER NOT NULL,
-                    finished DOUBLE PRECISION NOT NULL)''',
-                '''CREATE TABLE IF NOT EXISTS processed_requests (
-                    player_id TEXT NOT NULL REFERENCES players(id),request_id TEXT NOT NULL,
-                    created DOUBLE PRECISION NOT NULL,PRIMARY KEY(player_id,request_id))''',
-                'CREATE INDEX IF NOT EXISTS runs_player_activity ON runs(player_id,activity,created)',
-                'CREATE INDEX IF NOT EXISTS results_player ON results(player_id)',
-                'CREATE INDEX IF NOT EXISTS players_class ON players(class_key)',
-            ]: c.execute(sql)
-
-class Connection:
-    def __init__(self,con,pg): self.con,self.pg=con,pg
-    def execute(self,sql,args=()):
-        return self.con.execute(sql.replace('?','%s') if self.pg else sql,args)
-    def one(self,sql,args=()):
-        row=self.execute(sql,args).fetchone()
-        return dict(row) if row is not None else None
-    def all(self,sql,args=()): return [dict(row) for row in self.execute(sql,args).fetchall()]
-    def lock_player(self,pid):
-        return self.one('SELECT * FROM players WHERE id=?'+(' FOR UPDATE' if self.pg else ''),(pid,))
-
-def make_maze():
-    grid=[[1]*9 for _ in range(9)]
-    grid[1][1]=0
-    stack=[(1,1)]
-    while stack:
-        x,y=stack[-1]
-        options=[(dx,dy) for dx,dy in ((2,0),(-2,0),(0,2),(0,-2))
-                 if 0<x+dx<8 and 0<y+dy<8 and grid[y+dy][x+dx]]
-        if not options: stack.pop();continue
-        dx,dy=RNG.choice(options)
-        grid[y+dy//2][x+dx//2]=0
-        grid[y+dy][x+dx]=0
-        stack.append((x+dx,y+dy))
-    queue=[(1,1)];dist={(1,1):0}
-    for x,y in queue:
-        for dx,dy in ((1,0),(-1,0),(0,1),(0,-1)):
-            nx,ny=x+dx,y+dy
-            if 0<=nx<9 and 0<=ny<9 and not grid[ny][nx] and (nx,ny) not in dist:
-                dist[nx,ny]=dist[x,y]+1;queue.append((nx,ny))
-    gx,gy=max(dist,key=dist.get)
-    return dict(grid=grid,goal={'x':gx,'y':gy},x=1,y=1,moves=0,pending=False,lives=3,
-                visited=[i==10 for i in range(81)])
-
-def question_pool(activity,level):
-    if activity=='words': return [q['id'] for q in WORD_BANK if q['level']==level]
-    factors=(range(1,6),range(2,11),range(6,11))[level]
-    return [f'q{a}-{b}' for a in factors for b in range(1,11)]
-
-def question_data(qid):
-    if qid.startswith('w'): return WORDS_BY_ID[qid]
-    a,b=map(int,qid[1:].split('-'))
-    return {'id':qid,'a':a,'b':b,'text':None}
-
-class Classroom:
-    def __init__(self,db): self.db=db
-
-    def authenticate(self,mode,payload):
-        first=clean_name(payload.get('first'),'שֵׁם פְּרָטִי')
-        last=clean_name(payload.get('last'),'שֵׁם מִשְׁפָּחָה')
-        group=clean_name(payload.get('class_name'),'כִּתָּה',24)
-        pin=payload.get('pin')
-        if not isinstance(pin,str) or not re.fullmatch('[0-9]{4}',pin):
-            raise UserError('הַקּוֹד צָרִיךְ לְהָכִיל אַרְבַּע סְפָרוֹת בְּדִיּוּק.')
-        key=identity(first,last,group);now=time.time();error=None;pid=None
-        with self.db.transaction() as c:
-            c.execute('INSERT INTO login_limits(identity_key,failures,window_start,blocked_until) VALUES(?,0,?,0) ON CONFLICT(identity_key) DO NOTHING',(key,now))
-            limit=c.one('SELECT * FROM login_limits WHERE identity_key=?'+(' FOR UPDATE' if c.pg else ''),(key,))
-            if limit['blocked_until']>now:
-                error='הָיוּ כַּמָּה נִסְיוֹנוֹת כְּנִיסָה שְׁגוּיִים. נְנַסֶּה שׁוּב בְּעוֹד כַּמָּה דַּקּוֹת.'
-            else:
-                player=c.one('SELECT * FROM players WHERE identity_key=?',(key,))
-                if mode=='register':
-                    if player: error='הַשֵּׁם וְהַכִּתָּה כְּבָר רְשׁוּמִים. נִבְחַר בִּכְנִיסָה לְשַׂחְקָן קַיָּם.'
-                    else:
-                        pid=str(uuid.uuid4());salt=secrets.token_hex(16)
-                        c.execute('INSERT INTO players(id,identity_key,first_name,last_name,class_name,class_key,pin_salt,pin_hash,created) VALUES(?,?,?,?,?,?,?,?,?)',
-                                  (pid,key,first,last,group,canonical_class(group),salt,pin_hash(pin,salt),now))
-                elif mode=='login':
-                    digest=pin_hash(pin,player['pin_salt'] if player else '0'*32)
-                    if player and hmac.compare_digest(digest,player['pin_hash']):
-                        pid=player['id']
-                        c.execute('UPDATE login_limits SET failures=0,window_start=?,blocked_until=0 WHERE identity_key=?',(now,key))
-                    else:
-                        failures=limit['failures']+1 if now-limit['window_start']<900 else 1
-                        started=limit['window_start'] if now-limit['window_start']<900 else now
-                        c.execute('UPDATE login_limits SET failures=?,window_start=?,blocked_until=? WHERE identity_key=?',
-                                  (failures,started,now+900 if failures>=5 else 0,key))
-                        error='הַפְּרָטִים אוֹ הַקּוֹד אֵינָם תּוֹאֲמִים. נִבְדֹּק וּנְנַסֶּה שׁוּב.'
-                else: error='פְּעֻלַּת כְּנִיסָה לֹא תַּקִּינָה.'
-        if error: raise UserError(error)
-        return pid
-
-    def unlocked(self,c,pid):
-        opened={a:0 for a in GAME_TOTALS}
-        for r in c.all('SELECT activity,MAX(level) AS level FROM results WHERE player_id=? AND passed=1 GROUP BY activity',(pid,)):
-            if r['activity'] in opened: opened[r['activity']]=min(2,int(r['level'])+1)
-        return opened
-
-    def latest(self,c,pid,activity):
-        row=c.one('SELECT * FROM runs WHERE player_id=? AND activity=? ORDER BY created DESC,id DESC LIMIT 1',(pid,activity))
-        if row: row['data']=json.loads(row['data'])
-        return row
-
-    def _save_run(self,c,run):
-        c.execute('UPDATE runs SET data=?,status=?,updated=? WHERE id=?',(encode(run['data']),run['status'],time.time(),run['id']))
-
-    def _new_run(self,c,pid,activity,level):
-        if activity=='table': data={'values':['']*100,'marks':['']*100,'first':[None]*100,'first_correct':0,'completed':0}
-        else:
-            total=GAME_TOTALS[activity][level]
-            data={'questions':RNG.sample(question_pool(activity,level),total),'index':0,'tries':0,'solved':False,
-                  'revealed':False,'first_correct':0,'completed':0,'points':0,'last_answer':''}
-            if activity=='maze': data.update(make_maze())
-        now=time.time()
-        run={'id':str(uuid.uuid4()),'player_id':pid,'activity':activity,'level':level,'status':'active','data':data,'created':now}
-        c.execute('INSERT INTO runs(id,player_id,activity,level,status,data,created,updated) VALUES(?,?,?,?,?,?,?,?)',
-                  (run['id'],pid,activity,level,'active',encode(data),now,now))
-        return run
-
-    def _finish(self,c,run,ending='complete'):
-        data=run['data'];activity=run['activity']
-        total=100 if activity=='table' else GAME_TOTALS[activity][run['level']]
-        score=round(data['first_correct']/total*100,2)
-        passed=ending=='complete' and score>=80
-        run['status']='lost' if ending=='lost' else ('passed' if passed else 'retry')
-        data['score']=score
-        c.execute('INSERT INTO results(run_id,player_id,activity,level,score,first_correct,total,passed,finished) VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(run_id) DO NOTHING',
-                  (run['id'],run['player_id'],activity,run['level'],score,data['first_correct'],total,int(passed),time.time()))
-        self._save_run(c,run)
-
-    def _owned_run(self,c,pid,payload):
-        rid=payload.get('run_id')
-        if not isinstance(rid,str): raise UserError('נִרְעֲנֵן אֶת הַמִּשְׂחָק וְנַמְשִׁיךְ.')
-        row=c.one('SELECT * FROM runs WHERE id=? AND player_id=?',(rid,pid))
-        if not row: raise UserError('הַמִּשְׂחָק אֵינוֹ זָמִין לַשַּׂחְקָן הַזֶּה.')
-        row['data']=json.loads(row['data'])
-        return row
-
-    def _current_question(self,run,payload):
-        d=run['data']
-        if run['activity']=='table' or d['index']>=len(d['questions']): raise UserError('הַסֶּבֶב כְּבָר הֻשְׁלַם.')
-        key=f"{run['id']}:{d['index']}"
-        if payload.get('question_key')!=key: raise UserError('הַשְּׁאֵלָה הִתְעַדְּכְנָה. נַעֲנֶה עַל הַשְּׁאֵלָה הַמֻּצֶּגֶת.')
-        return question_data(d['questions'][d['index']])
-
-    def _answer(self,c,run,payload):
-        d=run['data'];activity=run['activity']
-        if run['status']!='active': return False
-        if activity=='maze' and not d['pending']: raise UserError('קֹדֶם מִתְקַדְּמִים בַּמָּבוֹךְ.')
-        q=self._current_question(run,payload)
-        if d['solved']: return False
-        if activity=='maze' and d['revealed']: return False
-        answer=parse_number(payload.get('answer'))
-        d['last_answer']=str(answer)
-        good=answer==q['a']*q['b']
-        if good:
-            if d['tries']==0: d['first_correct']+=1
-            d['points']+=10 if d['tries']==0 else 5
-            d['solved']=True;d['completed']+=1
-            if activity=='maze':
-                self._advance_maze_question(c,run)
-            elif d['completed']==20: self._finish(c,run)
-        else:
-            d['tries']+=1
-            if activity=='maze':
-                d['lives']=max(0,3-d['tries'])
-            if d['tries']>=3: d['revealed']=True
-        self._save_run(c,run)
-        return good
-
-    def _next(self,c,run,payload):
-        if run['status']!='active': return
-        if run['activity'] not in ('quick','words'): raise UserError('פְּעֻלָּה לֹא מַתְאִימָה לַמִּשְׂחָק.')
-        self._current_question(run,payload)
-        d=run['data']
-        if not d['solved']: raise UserError('קֹדֶם נַקְלִיד תְּשׁוּבָה נְכוֹנָה לַשְּׁאֵלָה הַזֹּאת.')
-        d.update(index=d['index']+1,tries=0,solved=False,revealed=False,last_answer='')
-        self._save_run(c,run)
-
-    def _advance_maze_question(self,c,run):
-        d=run['data']
-        d.update(index=d['index']+1,tries=0,solved=False,revealed=False,last_answer='',
-                 pending=False,moves=0,lives=3)
-        self._maze_finish_if_ready(c,run)
-
-    def _maze_continue(self,c,run,payload):
-        if run['activity']!='maze': raise UserError('פְּעֻלָּה לֹא מַתְאִימָה לַמִּשְׂחָק.')
-        if run['status']!='active': return
-        self._current_question(run,payload)
-        d=run['data']
-        if not d['pending'] or not d['revealed'] or d['tries']<3:
-            raise UserError('קֹדֶם נַעֲנֶה עַל הַשְּׁאֵלָה הַמֻּצֶּגֶת.')
-        # Acknowledging the shown solution completes this question without points.
-        d['completed']+=1
-        self._advance_maze_question(c,run)
-        self._save_run(c,run)
-
-    def _maze_finish_if_ready(self,c,run):
-        d=run['data']
-        if d['completed']==len(d['questions']) and not d['pending'] and (d['x'],d['y'])==(d['goal']['x'],d['goal']['y']):
-            self._finish(c,run)
-
-    def _move(self,c,run,payload):
-        d=run['data']
-        if run['activity']!='maze' or run['status']!='active' or d['pending']: return
-        delta={'up':(0,-1),'down':(0,1),'left':(-1,0),'right':(1,0)}.get(payload.get('direction'))
-        if delta is None: raise UserError('כִּוּוּן לֹא תַּקִּין.')
-        nx,ny=d['x']+delta[0],d['y']+delta[1]
-        if not (0<=nx<9 and 0<=ny<9) or d['grid'][ny][nx]: return
-        d['x']=nx;d['y']=ny;d['visited'][ny*9+nx]=True
-        if d['completed']<len(d['questions']):
-            d['moves']+=1
-            if d['moves']==3: d['pending']=True
-        self._maze_finish_if_ready(c,run)
-        self._save_run(c,run)
-
-    def _table(self,c,pid,action,payload):
-        run=self.latest(c,pid,'table') or self._new_run(c,pid,'table',0)
-        if payload.get('run_id') and payload['run_id']!=run['id']:
-            raise UserError('הַלּוּחַ הִתְעַדְּכֵן בְּמָקוֹם אַחֵר. נִטְעַן אֶת הַגִּרְסָה הָאַחֲרוֹנָה.')
-        if action=='table_clear':
-            # A reset abandons an unfinished table; only completed boards are ranked.
-            if run['status']=='active':
-                run['status']='abandoned'
-                self._save_run(c,run)
-            if run['status']!='active': run=self._new_run(c,pid,'table',0)
-            else: run['data'].update(values=['']*100,marks=['']*100,first=[None]*100)
-            self._save_run(c,run);return False
-        if run['status']!='active': return False
-        values=payload.get('values')
-        if not isinstance(values,list) or len(values)!=100 or any(not isinstance(v,str) or len(v)>3 for v in values):
-            raise UserError('נִרְעֲנֵן אֶת הַלּוּחַ וְנַמְשִׁיךְ.')
-        d=run['data'];filled=correct=0
-        for i,value in enumerate(values):
-            value=value.strip();expected=(i//10+1)*(i%10+1)
-            good=bool(re.fullmatch('[0-9]{1,3}',value)) and int(value)==expected
-            if value!=d['values'][i]: d['marks'][i]=''
-            d['values'][i]=value
-            if action=='table_clear_wrong':
-                if value and not good: d['values'][i]='';d['marks'][i]=''
-            elif action=='table_check':
-                if value:
-                    filled+=1;correct+=int(good)
-                    if d['first'][i] is None: d['first'][i]=bool(good)
-                    d['marks'][i]='correct' if good else 'wrong'
-                else: d['marks'][i]=''
-        d['first_correct']=sum(x is True for x in d['first'])
-        d['completed']=sum(v=='correct' for v in d['marks'])
-        if action=='table_check' and filled==correct==100: self._finish(c,run)
-        self._save_run(c,run)
-        return action=='table_check' and filled>0 and filled==correct
-
-    def perform(self,pid,action,payload,request_id):
-        if not isinstance(payload,dict): raise UserError('פְּעֻלָּה לֹא תַּקִּינָה.')
-        if not isinstance(request_id,str) or not re.fullmatch('[A-Za-z0-9_-]{8,100}',request_id):
-            raise UserError('נִרְעֲנֵן אֶת הַדַּף וְנַמְשִׁיךְ.')
-        celebrate=False
-        with self.db.transaction() as c:
-            if not c.lock_player(pid): raise UserError('נִכָּנֵס שׁוּב לַמִּשְׂחָק.')
-            done=c.one('SELECT request_id FROM processed_requests WHERE player_id=? AND request_id=?',(pid,request_id))
-            if not done and action!='sync':
-                if action=='start':
-                    activity=payload.get('activity');level=payload.get('level')
-                    if activity not in GAME_TOTALS or type(level) is not int or level not in (0,1,2):
-                        raise UserError('רָמָה לֹא תַּקִּינָה.')
-                    if level>self.unlocked(c,pid)[activity]:
-                        raise UserError('קֹדֶם נְסַיֵּם אֶת הָרָמָה הַקּוֹדֶמֶת עִם לְפָחוֹת 80% הַצְלָחָה.')
-                    latest=self.latest(c,pid,activity)
-                    if not latest or latest['status']!='active': self._new_run(c,pid,activity,level)
-                elif action.startswith('table_') and action in ('table_save','table_check','table_clear_wrong','table_clear'):
-                    celebrate=self._table(c,pid,action,payload)
-                elif action in ('answer','next','move','maze_continue','maze_restart'):
-                    run=self._owned_run(c,pid,payload)
-                    if action=='answer': celebrate=self._answer(c,run,payload)
-                    elif action=='next': self._next(c,run,payload)
-                    elif action=='move': self._move(c,run,payload)
-                    elif action=='maze_continue': self._maze_continue(c,run,payload)
-                    elif action=='maze_restart':
-                        if run['activity']!='maze': raise UserError('פְּעֻלָּה לֹא תַּקִּינָה.')
-                        latest=self.latest(c,pid,'maze')
-                        if latest['id']!=run['id']: raise UserError('הַמִּשְׂחָק הִתְעַדְּכֵן. נַמְשִׁיךְ מֵהַמַּצָּב הַנּוֹכְחִי.')
-                        if run['status']=='active':
-                            run['status']='abandoned';self._save_run(c,run)
-                        self._new_run(c,pid,'maze',run['level'])
-                else: raise UserError('פְּעֻלָּה לֹא תַּקִּינָה.')
-                c.execute('INSERT INTO processed_requests(player_id,request_id,created) VALUES(?,?,?)',(pid,request_id,time.time()))
-                c.execute('DELETE FROM processed_requests WHERE player_id=? AND created<?',(pid,time.time()-86400*7))
-            return {'snapshot':self._snapshot(c,pid),'celebrate':bool(celebrate and not done)}
-
-    def snapshot(self,pid):
-        with self.db.transaction() as c: return self._snapshot(c,pid)
-
-    def _public_run(self,run):
-        d=run['data'];activity=run['activity']
-        result={k:run[k] for k in ('id','activity','level','status')}
-        result.update(first_correct=d['first_correct'],completed=d['completed'],score=d.get('score'),
-                      total=100 if activity=='table' else len(d['questions']))
-        if activity=='table':
-            result.update(values=d['values'],marks=d['marks'])
-            return result
-        result.update(index=d['index'],tries=d['tries'],solved=d['solved'],points=d['points'],revealed=d['revealed'])
-        if d['index']<len(d['questions']):
-            q=question_data(d['questions'][d['index']])
-            result['question']={'key':f"{run['id']}:{d['index']}",'text':q['text']}
-            if activity!='words': result['question'].update(a=q['a'],b=q['b'])
-            if d['revealed']: result['question']['answer']=q['a']*q['b']
-        if activity=='maze':
-            result.update({k:d[k] for k in ('grid','goal','x','y','moves','pending','lives','visited')})
-            if run['status']=='active': result['lives']=max(0,3-d['tries'])
-        return result
-
-    def _snapshot(self,c,pid):
-        player=c.one('SELECT id,first_name,last_name,class_name,class_key FROM players WHERE id=?',(pid,))
-        if not player: raise UserError('נִכָּנֵס שׁוּב לַמִּשְׂחָק.')
-        board=c.all('''SELECT p.id,p.first_name,p.last_name,p.class_name,COUNT(r.run_id) AS games,AVG(r.score) AS average
-            FROM players p JOIN results r ON r.player_id=p.id WHERE p.class_key=?
-            GROUP BY p.id,p.first_name,p.last_name,p.class_name
-            ORDER BY AVG(r.score) DESC,p.first_name,p.last_name,p.id LIMIT 500''',(player['class_key'],))
-        previous=None;rank=0
-        for row in board:
-            row['average']=round(float(row['average']),2)
-            if previous!=row['average']: rank+=1;previous=row['average']
-            row['rank']=rank;row['self']=row['id']==pid;del row['id']
-        stats=c.one('SELECT COUNT(run_id) AS games,AVG(score) AS average FROM results WHERE player_id=?',(pid,))
-        stats['average']=round(float(stats['average']),2) if stats['average'] is not None else None
-        recent=c.all('SELECT activity,level,score,first_correct,total,passed,finished FROM results WHERE player_id=? ORDER BY finished DESC LIMIT 30',(pid,))
-        runs={a:self.latest(c,pid,a) for a in ACTIVITIES}
-        return {'player':{k:player[k] for k in ('id','first_name','last_name','class_name')},
-                'stats':stats,'leaderboard':board,'recent':recent,'unlocked':self.unlocked(c,pid),
-                'runs':{a:self._public_run(r) if r else None for a,r in runs.items()},
-                'bank_counts':[sum(q['level']==i for q in WORD_BANK) for i in range(3)]}
-
+import tempfile
+import streamlit as st
+import streamlit.components.v1 as components
 
 APP_HTML = r'''<!doctype html>
 <html lang="he" dir="rtl">
@@ -1685,9 +1176,9 @@ APP_HTML = r'''<!doctype html>
         }
       }
 
-.account-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#eaf0e5;border-radius:14px;padding:10px 14px;margin-bottom:14px;font-size:14px;line-height:1.8}
-.account-strip .btn{font-size:13px;padding:7px 12px;min-height:38px}.auth-panel{max-width:570px;margin:0 auto}.auth-tabs{display:flex;gap:10px;margin-bottom:20px}.auth-tabs .btn{flex:1}.auth-fields{display:grid;grid-template-columns:1fr 1fr;gap:15px}.auth-fields label{display:block;margin-bottom:7px;font-weight:700;line-height:1.7}.auth-fields input{width:100%;min-width:0;border:2px solid var(--line);border-radius:11px;padding:12px;background:white;color:var(--ink);font-size:18px;min-height:50px;text-align:right}.auth-fields input[dir=ltr]{text-align:left}.auth-fields .wide{grid-column:1/-1}.auth-fields .btn{width:100%}.session-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.quiz-meta{font-size:15px;color:var(--muted);line-height:1.8}.quiz-progress{height:7px;background:#e5eae0;border-radius:7px;overflow:hidden;direction:ltr;margin:14px 0}.quiz-progress>div{height:100%;background:var(--green);transition:width .2s}.revealed-answer{background:#fff1ca;border:1px solid #efd18f;border-radius:14px;padding:14px;margin-top:15px;line-height:1.8}.revealed-answer .math{margin:6px 0!important}.result-card{padding:16px;background:#edf4e9;border-radius:15px;margin-top:16px}.result-card .result-number{font-size:42px;font-weight:700;color:var(--green);display:block;direction:ltr;text-align:left}.result-card p{margin:8px 0 12px}.stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}.stat-card{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:18px}.stat-card .num{display:block;font-size:30px;font-weight:700;color:var(--green);margin-top:7px}.rank-scroll{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:14px}.rank-table{width:100%;border-collapse:collapse;background:var(--white);font-size:15px}.rank-table th,.rank-table td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:right;line-height:1.7}.rank-table th{background:#e7efe5;font-size:13px;white-space:nowrap}.rank-table .numeric-cell{direction:ltr;text-align:left;font-variant-numeric:tabular-nums;white-space:nowrap}.rank-table tr.self{background:#e3f4e9;font-weight:700}.rank-table tr:last-child td{border-bottom:0}.rank-empty{padding:20px;line-height:1.8;color:var(--muted)}.rank-rules{margin:15px 0;color:var(--muted);font-size:14px;line-height:1.8}.history-list{display:grid;gap:10px;margin-top:14px}.history-row{display:flex;justify-content:space-between;align-items:center;gap:15px;border:1px solid var(--line);background:var(--white);padding:12px 15px;border-radius:12px;line-height:1.8}.history-row small{display:block;color:var(--muted)}.history-score{font-weight:700;font-size:22px;direction:ltr;text-align:left}.network-state{position:fixed;bottom:10px;left:10px;z-index:100;background:var(--ink);color:white;padding:9px 14px;border-radius:24px;font-size:13px;pointer-events:none}.busy button[data-move]{opacity:.55}.table-panel .toolbar{direction:ltr}.table-panel .toolbar>div,.table-panel .toolbar>button{direction:rtl}.draft-note{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px}.start-prompt{padding:22px;border:1px dashed #9fbdab;border-radius:16px;margin-top:16px;line-height:1.8}.section-error{margin-bottom:14px}.quiz-card .word-question{margin:16px 0}.quiz-card .math{margin:18px 0}.quiz-end-actions{display:flex;gap:10px;flex-wrap:wrap}.quiz-end-actions .btn{flex:1}.score-aside{font-size:13px;line-height:1.8;color:var(--muted)}
-@media(max-width:480px){.auth-fields{grid-template-columns:1fr;gap:12px}.stats-grid{gap:7px}.stat-card{padding:12px 9px;font-size:12px}.stat-card .num{font-size:24px}.rank-table th,.rank-table td{padding:10px 6px;font-size:12px}.rank-table th{font-size:11px}.rank-table td.name-cell{min-width:82px;word-break:break-word}.auth-tabs{gap:7px}.auth-tabs .btn{font-size:14px;padding:10px 8px}.session-heading{gap:8px}.account-strip{font-size:13px;padding:9px 11px}.quiz-card{padding:15px}.result-card .result-number{font-size:36px}.history-row{font-size:14px;padding:10px}.network-state{font-size:12px;bottom:7px;left:7px}}
+
+.session-heading{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.quiz-meta{font-size:15px;color:var(--muted);line-height:1.8}.quiz-progress{height:7px;background:#e5eae0;border-radius:7px;overflow:hidden;direction:ltr;margin:14px 0}.quiz-progress>div{height:100%;background:var(--green);transition:width .2s}.revealed-answer{background:#fff1ca;border:1px solid #efd18f;border-radius:14px;padding:14px;margin-top:15px;line-height:1.8}.revealed-answer .math{margin:6px 0!important}.result-card{padding:16px;background:#edf4e9;border-radius:15px;margin-top:16px}.result-card .result-number{font-size:42px;font-weight:700;color:var(--green);display:block;direction:ltr;text-align:left}.result-card p{margin:8px 0 12px}.busy button[data-move]{opacity:.55}.table-panel .toolbar{direction:ltr}.table-panel .toolbar>div,.table-panel .toolbar>button{direction:rtl}.draft-note{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px}.start-prompt{padding:22px;border:1px dashed #9fbdab;border-radius:16px;margin-top:16px;line-height:1.8}.section-error{margin-bottom:14px}.quiz-card .word-question{margin:16px 0}.quiz-card .math{margin:18px 0}.quiz-end-actions{display:flex;gap:10px;flex-wrap:wrap}.quiz-end-actions .btn{flex:1}.score-aside{font-size:13px;line-height:1.8;color:var(--muted)}
+@media(max-width:480px){.session-heading{gap:8px}.quiz-card{padding:15px}.result-card .result-number{font-size:36px}}
     </style>
   </head>
   <body>
@@ -1705,11 +1196,11 @@ APP_HTML = r'''<!doctype html>
           <button data-page="table">לוּחַ הַכֶּפֶל</button>
           <button data-page="quick">תִּרְגּוּל מָהִיר</button>
           <button data-page="words">שְׁאֵלוֹת מִלּוּלִיּוֹת</button>
-          <button data-page="maze">הַמָּבוֹךְ</button><button data-page="ranking">נִקּוּד וְדֵרוּג</button><button data-page="login" id="nav-login">כְּנִיסַת שַׂחְקָן</button>
+          <button data-page="maze">הַמָּבוֹךְ</button>
         </nav>
-<div class="account-strip" id="account-strip"><span id="account-greeting">נִכְנָסִים עִם הַשֵּׁם וְהַקּוֹד, וּמַתְחִילִים לְשַׂחֵק.</span><button class="btn secondary" id="account-action">כְּנִיסָה לַמִּשְׂחָק</button></div>
+
       </header>
-      <div id="global-status" class="status section-error" role="status"></div>
+      <p id="storage-note" class="status warning" hidden role="status">הַדַּפְדְּפָן לֹא מְאַפְשֵׁר שְׁמִירָה. אֶפְשָׁר לְשַׂחֵק, אֲבָל הַהִתְקַדְּמוּת לֹא תִּשָּׁמֵר אַחֲרֵי סְגִירַת הַדַּף.</p><div id="global-status" class="status section-error" role="status"></div>
       <section id="page-home" class="page" aria-labelledby="home-title">
         <div class="hero">
           <div>
@@ -1786,23 +1277,7 @@ APP_HTML = r'''<!doctype html>
           </article>
         </div>
       </section>
-<section class="page" id="page-login" hidden aria-labelledby="login-title">
- <div class="page-heading"><span class="tag">הַמָּקוֹם שֶׁל כָּל הַכִּתָּה</span><h2 id="login-title">כְּנִיסַת שַׂחְקָן</h2><p>הַשֵּׁם, הַכִּתָּה וְהַקּוֹד מַחְזִירִים אוֹתָנוּ לַהִתְקַדְּמוּת שֶׁלָּנוּ — גַּם מִמַּכְשִׁיר אַחֵר.</p></div>
- <div class="panel auth-panel"><div class="auth-tabs"><button class="btn" id="auth-login" aria-pressed="true">כְּבָר נִרְשַׁמְנוּ</button><button class="btn secondary" id="auth-register" aria-pressed="false">פַּעַם רִאשׁוֹנָה</button></div>
- <form id="auth-form" novalidate><div class="auth-fields">
- <div><label for="auth-first">שֵׁם פְּרָטִי</label><input id="auth-first" name="first_name" maxlength="32" autocomplete="given-name" required></div>
- <div><label for="auth-last">שֵׁם מִשְׁפָּחָה</label><input id="auth-last" name="last_name" maxlength="32" autocomplete="family-name" required></div>
- <div><label for="auth-class">כִּתָּה</label><input id="auth-class" name="class_name" maxlength="24" placeholder="ג׳ 1" autocomplete="off" required></div>
- <div><label for="auth-pin">קוֹד אִישִׁי — אַרְבַּע סְפָרוֹת</label><input id="auth-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" minlength="4" maxlength="4" dir="ltr" autocomplete="current-password" required></div>
- <div class="wide"><button class="btn" id="auth-submit" type="submit">נִכְנָסִים לְשַׂחֵק ←</button></div></div></form>
- <div class="status" id="auth-status" role="status"></div><p class="subtle" id="auth-hint" style="margin:14px 0 0">נַקְלִיד אֶת אוֹתָם הַפְּרָטִים שֶׁבָּחַרְנוּ בַּהַרְשָׁמָה.</p></div></section>
- <section class="page" id="page-ranking" hidden aria-labelledby="ranking-title"><div class="page-heading"><span class="tag">כָּל הַצְלָחָה נִסְפֶּרֶת</span><h2 id="ranking-title">הַנִּקּוּד וְהַדֵּרוּג שֶׁלָּנוּ</h2><p id="ranking-class"></p></div>
- <div class="stats-grid"><div class="stat-card">הַמְּמֻצָּע שֶׁלִּי<bdi class="num" id="my-average">—</bdi></div><div class="stat-card">מִשְׂחָקִים שֶׁסֻּיְּמוּ<bdi class="num" id="my-games">0</bdi></div><div class="stat-card">הַמָּקוֹם שֶׁלִּי<bdi class="num" id="my-rank">—</bdi></div></div>
- <div class="toolbar"><h3 style="margin:0">לוּחַ הַכִּתָּה 🏆</h3><button class="btn secondary" id="refresh-ranking">רִעֲנוּן הַדֵּרוּג ↻</button></div>
- <div class="rank-scroll"><table class="rank-table"><thead><tr><th>מָקוֹם</th><th>שֵׁם הַשַּׂחְקָן</th><th>כִּתָּה</th><th>מְמֻצָּע</th><th>מִשְׂחָקִים</th></tr></thead><tbody id="ranking-body"></tbody></table><div id="ranking-empty" class="rank-empty" hidden>עֲדַיִן אֵין תּוֹצָאוֹת. מְסַיְּמִים מִשְׂחָק רִאשׁוֹן וּמַתְחִילִים!</div></div>
- <p class="rank-rules">הַדֵּרוּג הוּא הַמְּמֻצָּע שֶׁל כָּל צִיּוּנֵי הַמִּשְׂחָקִים שֶׁסֻּיְּמוּ, בְּסֻלָּם שֶׁל <bdi>0–100</bdi>. צִיּוּן מִשְׂחָק הוּא אֲחוּז הַתְּשׁוּבוֹת הַנְּכוֹנוֹת בַּנִּסָּיוֹן הָרִאשׁוֹן. בַּטַּבְלָה מְסַיְּמִים אֶת כָּל <bdi>100</bdi> הַתָּאִים. בַּמָּבוֹךְ, שְׁאֵלָה שֶׁהַתְּשׁוּבָה לָהּ נֶחְשְׂפָה אֵינָהּ נִסְפֶּרֶת כִּנְכוֹנָה. הַצִּיּוּן נִשְׁמָר בְּסִיּוּם הָרָמָה. בְּמְמֻצָּע שָׁוֶה מְקַבְּלִים אוֹתוֹ מָקוֹם.</p>
- <h3>הַמִּשְׂחָקִים הָאַחֲרוֹנִים שֶׁלִּי</h3><div id="history-list" class="history-list"></div></section>
-      <section id="page-table" class="page" hidden aria-labelledby="table-title">
+<section id="page-table" class="page" hidden aria-labelledby="table-title">
         <div class="page-heading">
           <span class="tag">מְתַרְגְּלִים בַּקֶּצֶב שֶׁלָּנוּ</span>
           <h2 id="table-title">לוּחַ הַכֶּפֶל</h2>
@@ -1849,26 +1324,26 @@ APP_HTML = r'''<!doctype html>
             ><button class="btn secondary" id="clear-wrong">מְחִיקַת תְּשׁוּבוֹת שְׁגוּיוֹת</button
             ><button class="btn soft" id="clear-table">מְחִיקַת הַכֹּל</button>
           </div>
-          <p class="score-aside">אֶפְשָׁר לִבְדֹּק גַּם חֵלֶק מֵהַטַּבְלָה. צִיּוּן לַדֵּרוּג נִשְׁמָר רַק אַחֲרֵי שֶׁמַּשְׁלִימִים אֶת כָּל הַלּוּחַ.</p><div id="table-draft-note" class="draft-note" role="status"></div><div class="status" id="table-status" role="status" aria-live="polite"></div>
+          <div id="table-draft-note" class="draft-note" role="status"></div><div class="status" id="table-status" role="status" aria-live="polite"></div>
         </div>
       </section>
 <section class="page" id="page-quick" hidden aria-labelledby="quick-title"><div class="page-heading"><span class="tag">עֶשְׂרִים צְעָדִים שֶׁל הַצְלָחָה</span><h2 id="quick-title">תִּרְגּוּל מָהִיר</h2><p>בְּכָל רָמָה <bdi>20</bdi> שְׁאֵלוֹת. עוֹנִים נָכוֹן וּמַמְשִׁיכִים, בַּקֶּצֶב שֶׁלָּנוּ.</p></div>
-    <div class="levels" id="quick-levels"></div><p class="subtle" id="quick-level-note"></p>
+    <div class="levels" id="quick-levels"></div>
     <div class="start-prompt" id="quick-start">בּוֹחֲרִים רָמָה פְּתוּחָה וּמַתְחִילִים סֶבֶב שֶׁל <bdi>20</bdi> שְׁאֵלוֹת.</div>
     <div class="panel quiz-card" id="quick-card" hidden><div class="session-heading"><span class="quiz-meta" id="quick-progress-label"></span><span class="score-pill">נָכוֹן בַּפַּעַם הָרִאשׁוֹנָה <bdi id="quick-first">0</bdi></span></div>
     <div class="quiz-progress"><div id="quick-progress-fill"></div></div><div id="quick-question-area"><div class="math" id="quick-exercise"></div>
     <form class="answer-form" id="quick-form" novalidate><label for="quick-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="quick-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="quick-submit" type="submit">בְּדִיקָה</button></div></form>
     <div class="status" id="quick-status" role="status"></div><div class="revealed-answer" id="quick-reveal" hidden><strong>נִלְמַד יַחַד אֶת הַתְּשׁוּבָה:</strong><div class="math" id="quick-solution"></div><span>נַקְלִיד אֶת הַתְּשׁוּבָה הַנְּכוֹנָה בַּשָּׂדֶה כְּדֵי לְהַמְשִׁיךְ.</span></div>
     <div class="actions"><button class="btn secondary" id="quick-next" disabled>לַשְּׁאֵלָה הַבָּאָה ←</button></div></div><div id="quick-result" class="result-card" hidden></div></div>
-    <p class="rank-rules">כְּדֵי לִפְתֹּחַ אֶת הָרָמָה הַבָּאָה צָרִיךְ לַעֲנוֹת נָכוֹן בַּנִּסָּיוֹן הָרִאשׁוֹן עַל לְפָחוֹת <bdi>16 / 20</bdi> שְׁאֵלוֹת (<bdi>80%</bdi>). אַחֲרֵי שָׁלוֹשׁ טָעֻיּוֹת תּוּצַג הַתְּשׁוּבָה. תִּקּוּן מְאַפְשֵׁר לְהַמְשִׁיךְ, אֲבָל אֵינוֹ מְשַׁנֶּה אֶת צִיּוּן הַנִּסָּיוֹן הָרִאשׁוֹן.</p></section><section class="page" id="page-words" hidden aria-labelledby="words-title"><div class="page-heading"><span class="tag">מָאתַיִם סִפּוּרִים, שָׁלוֹשׁ רָמוֹת</span><h2 id="words-title">שְׁאֵלוֹת מִלּוּלִיּוֹת</h2><p>בְּכָל רָמָה <bdi>20</bdi> שְׁאֵלוֹת. עוֹנִים נָכוֹן וּמַמְשִׁיכִים, בַּקֶּצֶב שֶׁלָּנוּ.</p></div>
-    <div class="levels" id="words-levels"></div><p class="subtle" id="words-level-note"></p>
+    </section><section class="page" id="page-words" hidden aria-labelledby="words-title"><div class="page-heading"><span class="tag">מָאתַיִם סִפּוּרִים, שָׁלוֹשׁ רָמוֹת</span><h2 id="words-title">שְׁאֵלוֹת מִלּוּלִיּוֹת</h2><p>בְּכָל רָמָה <bdi>20</bdi> שְׁאֵלוֹת. עוֹנִים נָכוֹן וּמַמְשִׁיכִים, בַּקֶּצֶב שֶׁלָּנוּ.</p></div>
+    <div class="levels" id="words-levels"></div>
     <div class="start-prompt" id="words-start">בּוֹחֲרִים רָמָה פְּתוּחָה וּמַתְחִילִים סֶבֶב שֶׁל <bdi>20</bdi> שְׁאֵלוֹת.</div>
     <div class="panel quiz-card" id="words-card" hidden><div class="session-heading"><span class="quiz-meta" id="words-progress-label"></span><span class="score-pill">נָכוֹן בַּפַּעַם הָרִאשׁוֹנָה <bdi id="words-first">0</bdi></span></div>
     <div class="quiz-progress"><div id="words-progress-fill"></div></div><div id="words-question-area"><p class="word-question" id="words-question"></p>
     <form class="answer-form" id="words-form" novalidate><label for="words-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="words-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="words-submit" type="submit">בְּדִיקָה</button></div></form>
     <div class="status" id="words-status" role="status"></div><div class="revealed-answer" id="words-reveal" hidden><strong>נִלְמַד יַחַד אֶת הַתְּשׁוּבָה:</strong><div class="math" id="words-solution"></div><span>נַקְלִיד אֶת הַתְּשׁוּבָה הַנְּכוֹנָה בַּשָּׂדֶה כְּדֵי לְהַמְשִׁיךְ.</span></div>
     <div class="actions"><button class="btn secondary" id="words-next" disabled>לַשְּׁאֵלָה הַבָּאָה ←</button></div></div><div id="words-result" class="result-card" hidden></div></div>
-    <p class="rank-rules">כְּדֵי לִפְתֹּחַ אֶת הָרָמָה הַבָּאָה צָרִיךְ לַעֲנוֹת נָכוֹן בַּנִּסָּיוֹן הָרִאשׁוֹן עַל לְפָחוֹת <bdi>16 / 20</bdi> שְׁאֵלוֹת (<bdi>80%</bdi>). אַחֲרֵי שָׁלוֹשׁ טָעֻיּוֹת תּוּצַג הַתְּשׁוּבָה. תִּקּוּן מְאַפְשֵׁר לְהַמְשִׁיךְ, אֲבָל אֵינוֹ מְשַׁנֶּה אֶת צִיּוּן הַנִּסָּיוֹן הָרִאשׁוֹן.</p></section>      <section id="page-maze" class="page" hidden aria-labelledby="maze-title">
+    </section>      <section id="page-maze" class="page" hidden aria-labelledby="maze-title">
         <div class="page-heading">
           <span class="tag">הַרְפַּתְקָה בֵּין הָעֵצִים</span>
           <h2 id="maze-title">הַמָּבוֹךְ הַקָּסוּם</h2>
@@ -1946,9 +1421,7 @@ APP_HTML = r'''<!doctype html>
                 ><button data-move="down" aria-label="לְמַטָּה">↓</button>
               </div>
               <div class="status" id="maze-status" role="status"></div>
-              <p class="subtle">
-                בְּכָל שְׁאֵלָה יֵשׁ שְׁלוֹשָׁה לְבָבוֹת. עוֹנִים נָכוֹן כְּדֵי לְהַמְשִׁיךְ. אַחֲרֵי שָׁלוֹשׁ טָעֻיּוֹת רוֹאִים אֶת הַתְּשׁוּבָה וְלוֹחֲצִים ״מַמְשִׁיכִים״, לְלֹא נִקּוּד לַשְּׁאֵלָה.
-              </p>
+              
               <button class="btn soft" id="maze-restart">הַתְחָלַת הָרָמָה מֵחָדָשׁ ↻</button>
             </div>
           </div>
@@ -1959,32 +1432,277 @@ APP_HTML = r'''<!doctype html>
           מְזַכָּה בִּנְקֻדּוֹת.
         </p>
       </section>
-<footer class="footer">נִבְנָה בְּאַהֲבָה לְשָׁקֵד וּלְחַבְרֵי הַכִּתָּה · הַתּוֹצָאוֹת וְהַהִתְקַדְּמוּת נִשְׁמָרוֹת בַּחֶשְׁבּוֹן הָאִישִׁי.</footer>
+<footer class="footer">נבנה באהבה לשקד בן עזרא</footer>
     </main>
     <div class="fireworks" id="fireworks" aria-hidden="true"></div>
-<div id="network-state" class="network-state" hidden role="status">שׁוֹמְרִים וּמְעַדְכְּנִים…</div>
+
 <script>
+const WORD_BANK = [{"id":"w001","level":0,"text":"יֵשׁ 2 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 2 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w002","level":0,"text":"יֵשׁ 2 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 5 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w003","level":0,"text":"יֵשׁ 3 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 4 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w004","level":0,"text":"יֵשׁ 4 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 3 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w005","level":0,"text":"יֵשׁ 5 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 2 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w006","level":0,"text":"עַל הַשֻּׁלְחָן 3 צַלָּחוֹת. בְּכָל צַלַּחַת 5 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w007","level":0,"text":"עַל הַשֻּׁלְחָן 4 צַלָּחוֹת. בְּכָל צַלַּחַת 4 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w008","level":0,"text":"עַל הַשֻּׁלְחָן 5 צַלָּחוֹת. בְּכָל צַלַּחַת 3 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w009","level":0,"text":"עַל הַשֻּׁלְחָן 2 צַלָּחוֹת. בְּכָל צַלַּחַת 2 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w010","level":0,"text":"עַל הַשֻּׁלְחָן 2 צַלָּחוֹת. בְּכָל צַלַּחַת 5 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w011","level":0,"text":"בַּגִּנָּה 5 שׁוּרוֹת. בְּכָל שׁוּרָה 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":5,"b":4},{"id":"w012","level":0,"text":"בַּגִּנָּה 2 שׁוּרוֹת. בְּכָל שׁוּרָה 3 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":2,"b":3},{"id":"w013","level":0,"text":"בַּגִּנָּה 3 שׁוּרוֹת. בְּכָל שׁוּרָה 2 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":3,"b":2},{"id":"w014","level":0,"text":"בַּגִּנָּה 3 שׁוּרוֹת. בְּכָל שׁוּרָה 5 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":3,"b":5},{"id":"w015","level":0,"text":"בַּגִּנָּה 4 שׁוּרוֹת. בְּכָל שׁוּרָה 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":4,"b":4},{"id":"w016","level":0,"text":"יֵשׁ 3 קֻפְסָאוֹת. בְּכָל קֻפְסָה 3 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":3},{"id":"w017","level":0,"text":"יֵשׁ 4 קֻפְסָאוֹת. בְּכָל קֻפְסָה 2 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":2},{"id":"w018","level":0,"text":"יֵשׁ 4 קֻפְסָאוֹת. בְּכָל קֻפְסָה 5 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":5},{"id":"w019","level":0,"text":"יֵשׁ 5 קֻפְסָאוֹת. בְּכָל קֻפְסָה 4 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":4},{"id":"w020","level":0,"text":"יֵשׁ 2 קֻפְסָאוֹת. בְּכָל קֻפְסָה 3 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":3},{"id":"w021","level":0,"text":"יֵשׁ 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 2 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":5,"b":2},{"id":"w022","level":0,"text":"יֵשׁ 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 5 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":5,"b":5},{"id":"w023","level":0,"text":"יֵשׁ 2 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 4 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":2,"b":4},{"id":"w024","level":0,"text":"יֵשׁ 3 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 3 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":3,"b":3},{"id":"w025","level":0,"text":"יֵשׁ 4 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 2 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":4,"b":2},{"id":"w026","level":0,"text":"בַּסַּל 2 חֲבִילוֹת. בְּכָל חֲבִילָה 5 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":2,"b":5},{"id":"w027","level":0,"text":"בַּסַּל 3 חֲבִילוֹת. בְּכָל חֲבִילָה 4 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":3,"b":4},{"id":"w028","level":0,"text":"בַּסַּל 4 חֲבִילוֹת. בְּכָל חֲבִילָה 3 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":4,"b":3},{"id":"w029","level":0,"text":"בַּסַּל 5 חֲבִילוֹת. בְּכָל חֲבִילָה 2 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":5,"b":2},{"id":"w030","level":0,"text":"בַּסַּל 5 חֲבִילוֹת. בְּכָל חֲבִילָה 5 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":5,"b":5},{"id":"w031","level":0,"text":"יֵשׁ 4 דַּפִּים. עַל כָּל דַּף 4 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w032","level":0,"text":"יֵשׁ 5 דַּפִּים. עַל כָּל דַּף 3 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w033","level":0,"text":"יֵשׁ 2 דַּפִּים. עַל כָּל דַּף 2 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w034","level":0,"text":"יֵשׁ 2 דַּפִּים. עַל כָּל דַּף 5 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w035","level":0,"text":"יֵשׁ 3 דַּפִּים. עַל כָּל דַּף 4 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w036","level":0,"text":"יֵשׁ 2 סַלִּים. בְּכָל סַל 3 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":2,"b":3},{"id":"w037","level":0,"text":"יֵשׁ 3 סַלִּים. בְּכָל סַל 2 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":3,"b":2},{"id":"w038","level":0,"text":"יֵשׁ 3 סַלִּים. בְּכָל סַל 5 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":3,"b":5},{"id":"w039","level":0,"text":"יֵשׁ 4 סַלִּים. בְּכָל סַל 4 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":4,"b":4},{"id":"w040","level":0,"text":"יֵשׁ 5 סַלִּים. בְּכָל סַל 3 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":5,"b":3},{"id":"w041","level":0,"text":"בַּסִּפְרִיָּה 4 מַדָּפִים. עַל כָּל מַדָּף 2 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":4,"b":2},{"id":"w042","level":0,"text":"בַּסִּפְרִיָּה 4 מַדָּפִים. עַל כָּל מַדָּף 5 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":4,"b":5},{"id":"w043","level":0,"text":"בַּסִּפְרִיָּה 5 מַדָּפִים. עַל כָּל מַדָּף 4 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":5,"b":4},{"id":"w044","level":0,"text":"בַּסִּפְרִיָּה 2 מַדָּפִים. עַל כָּל מַדָּף 3 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":3},{"id":"w045","level":0,"text":"בַּסִּפְרִיָּה 3 מַדָּפִים. עַל כָּל מַדָּף 2 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":3,"b":2},{"id":"w046","level":0,"text":"בַּיַּעַר 5 עֵצִים. עַל כָּל עֵץ 5 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":5,"b":5},{"id":"w047","level":0,"text":"בַּיַּעַר 2 עֵצִים. עַל כָּל עֵץ 4 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":2,"b":4},{"id":"w048","level":0,"text":"בַּיַּעַר 3 עֵצִים. עַל כָּל עֵץ 3 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":3,"b":3},{"id":"w049","level":0,"text":"בַּיַּעַר 4 עֵצִים. עַל כָּל עֵץ 2 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":4,"b":2},{"id":"w050","level":0,"text":"בַּיַּעַר 4 עֵצִים. עַל כָּל עֵץ 5 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":4,"b":5},{"id":"w051","level":0,"text":"יֵשׁ 3 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 4 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w052","level":0,"text":"יֵשׁ 4 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 3 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w053","level":0,"text":"יֵשׁ 5 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 2 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w054","level":0,"text":"יֵשׁ 5 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 5 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w055","level":0,"text":"יֵשׁ 2 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 4 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w056","level":0,"text":"יֵשׁ 5 צְמִידִים. בְּכָל צָמִיד 3 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":5,"b":3},{"id":"w057","level":0,"text":"יֵשׁ 2 צְמִידִים. בְּכָל צָמִיד 2 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":2,"b":2},{"id":"w058","level":0,"text":"יֵשׁ 2 צְמִידִים. בְּכָל צָמִיד 5 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":2,"b":5},{"id":"w059","level":0,"text":"יֵשׁ 3 צְמִידִים. בְּכָל צָמִיד 4 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":3,"b":4},{"id":"w060","level":0,"text":"יֵשׁ 4 צְמִידִים. בְּכָל צָמִיד 3 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":4,"b":3},{"id":"w061","level":0,"text":"יֵשׁ 3 קַרְטוֹנִים. בְּכָל קַרְטוֹן 2 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":2},{"id":"w062","level":0,"text":"יֵשׁ 3 קַרְטוֹנִים. בְּכָל קַרְטוֹן 5 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w063","level":0,"text":"יֵשׁ 4 קַרְטוֹנִים. בְּכָל קַרְטוֹן 4 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w064","level":0,"text":"יֵשׁ 5 קַרְטוֹנִים. בְּכָל קַרְטוֹן 3 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w065","level":0,"text":"יֵשׁ 2 קַרְטוֹנִים. בְּכָל קַרְטוֹן 2 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w066","level":0,"text":"בַּמִּשְׂחָק 4 מִגְדָּלִים. בְּכָל מִגְדָּל 5 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":5},{"id":"w067","level":0,"text":"בַּמִּשְׂחָק 5 מִגְדָּלִים. בְּכָל מִגְדָּל 4 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":4},{"id":"w068","level":0,"text":"בַּמִּשְׂחָק 2 מִגְדָּלִים. בְּכָל מִגְדָּל 3 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":3},{"id":"w069","level":0,"text":"בַּמִּשְׂחָק 3 מִגְדָּלִים. בְּכָל מִגְדָּל 2 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":2},{"id":"w070","level":0,"text":"בַּמִּשְׂחָק 3 מִגְדָּלִים. בְּכָל מִגְדָּל 5 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w071","level":0,"text":"יֵשׁ 2 זֵרִים. בְּכָל זֵר 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":2,"b":4},{"id":"w072","level":0,"text":"יֵשׁ 3 זֵרִים. בְּכָל זֵר 3 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":3,"b":3},{"id":"w073","level":0,"text":"יֵשׁ 4 זֵרִים. בְּכָל זֵר 2 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":4,"b":2},{"id":"w074","level":0,"text":"יֵשׁ 4 זֵרִים. בְּכָל זֵר 5 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":4,"b":5},{"id":"w075","level":0,"text":"יֵשׁ 5 זֵרִים. בְּכָל זֵר 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":5,"b":4},{"id":"w076","level":0,"text":"יֵשׁ 4 אֲרִיזוֹת. בְּכָל אֲרִיזָה 3 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w077","level":0,"text":"יֵשׁ 5 אֲרִיזוֹת. בְּכָל אֲרִיזָה 2 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w078","level":0,"text":"יֵשׁ 5 אֲרִיזוֹת. בְּכָל אֲרִיזָה 5 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w079","level":0,"text":"יֵשׁ 2 אֲרִיזוֹת. בְּכָל אֲרִיזָה 4 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w080","level":0,"text":"יֵשׁ 3 אֲרִיזוֹת. בְּכָל אֲרִיזָה 3 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":3},{"id":"w081","level":1,"text":"לַהַצָּגָה הֵכִינוּ 5 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 6 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":5,"b":6},{"id":"w082","level":1,"text":"לַהַצָּגָה הֵכִינוּ 5 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 9 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":5,"b":9},{"id":"w083","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 3 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":3},{"id":"w084","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 6 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":6},{"id":"w085","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 9 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":9},{"id":"w086","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־4 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":4},{"id":"w087","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־7 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":7},{"id":"w088","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־10 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":10},{"id":"w089","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־4 תְּמוּנוֹת. מִלְּאוּ 7 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":7,"b":4},{"id":"w090","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־7 תְּמוּנוֹת. מִלְּאוּ 7 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":7,"b":7},{"id":"w091","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 2 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":2},{"id":"w092","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 5 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":5},{"id":"w093","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 8 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":8},{"id":"w094","level":1,"text":"בְּמֶשֶׁךְ 8 יָמִים קָרְאוּ בְּכָל יוֹם 2 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":8,"b":2},{"id":"w095","level":1,"text":"בְּמֶשֶׁךְ 8 יָמִים קָרְאוּ בְּכָל יוֹם 5 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":8,"b":5},{"id":"w096","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 9 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 7 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":7,"b":9},{"id":"w097","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 3 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":3},{"id":"w098","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 6 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":6},{"id":"w099","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 9 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":9},{"id":"w100","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 3 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 9 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":9,"b":3},{"id":"w101","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 8 מַגָּשִׁים. עַל כָּל מַגָּשׁ 7 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":8,"b":7},{"id":"w102","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 8 מַגָּשִׁים. עַל כָּל מַגָּשׁ 10 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":8,"b":10},{"id":"w103","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 4 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":4},{"id":"w104","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 7 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":7},{"id":"w105","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 10 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":10},{"id":"w106","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 5 דַּפִּים. בַּחֻג 9 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":9,"b":5},{"id":"w107","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 8 דַּפִּים. בַּחֻג 9 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":9,"b":8},{"id":"w108","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 2 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":2},{"id":"w109","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 5 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":5},{"id":"w110","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 8 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":8},{"id":"w111","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 3 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":3},{"id":"w112","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 6 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":6},{"id":"w113","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 9 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":9},{"id":"w114","level":1,"text":"בַּחֲנוּת יֵשׁ 2 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 3 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":3},{"id":"w115","level":1,"text":"בַּחֲנוּת יֵשׁ 2 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 6 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":6},{"id":"w116","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 10 תַּחֲנוֹת. בָּנוּ 10 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":10,"b":10},{"id":"w117","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 4 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w118","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 7 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":7},{"id":"w119","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 10 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":10},{"id":"w120","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 4 תַּחֲנוֹת. בָּנוּ 3 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w121","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 8 מִכְחוֹלִים. הֵבִיאוּ 2 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":2,"b":8},{"id":"w122","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 2 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":2},{"id":"w123","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 5 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":5},{"id":"w124","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 8 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":8},{"id":"w125","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 2 מִכְחוֹלִים. הֵבִיאוּ 4 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":4,"b":2},{"id":"w126","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 6 מַפִּיּוֹת. בָּאוּלָם 3 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":3,"b":6},{"id":"w127","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 9 מַפִּיּוֹת. בָּאוּלָם 3 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":3,"b":9},{"id":"w128","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 3 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":3},{"id":"w129","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 6 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":6},{"id":"w130","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 9 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":9},{"id":"w131","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 4 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":4},{"id":"w132","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 7 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":7},{"id":"w133","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 10 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":10},{"id":"w134","level":1,"text":"הַגַּנָּן שָׁתַל 5 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 4 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":5,"b":4},{"id":"w135","level":1,"text":"הַגַּנָּן שָׁתַל 5 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 7 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":5,"b":7},{"id":"w136","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 2 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w137","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 5 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w138","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 8 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":8},{"id":"w139","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 2 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 6 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":6,"b":2},{"id":"w140","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 5 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 6 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":6,"b":5},{"id":"w141","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־7 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 10 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":10,"b":7},{"id":"w142","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־10 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 10 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":10,"b":10},{"id":"w143","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־5 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 6 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":6,"b":5},{"id":"w144","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־8 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 6 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":6,"b":8},{"id":"w145","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־3 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 7 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":7,"b":3},{"id":"w146","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־6 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־6 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":6,"b":6},{"id":"w147","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־9 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־6 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":6,"b":9},{"id":"w148","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־4 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":4},{"id":"w149","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־7 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":7},{"id":"w150","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־10 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":10},{"id":"w151","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 5 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 7 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":7,"b":5},{"id":"w152","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 8 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 7 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":7,"b":8},{"id":"w153","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 3 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":3},{"id":"w154","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 6 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":6},{"id":"w155","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 9 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":9},{"id":"w156","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 4 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":4},{"id":"w157","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 7 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":7},{"id":"w158","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 10 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":10},{"id":"w159","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 5 חֲלָקִים. הַכִּתָּה בּוֹנָה 9 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":9,"b":5},{"id":"w160","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 8 חֲלָקִים. הַכִּתָּה בּוֹנָה 9 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":9,"b":8},{"id":"w161","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 3 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":3},{"id":"w162","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 6 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":6},{"id":"w163","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 9 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":9},{"id":"w164","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 10 שׁוּרוֹת, וּבְכָל שׁוּרָה 4 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":10,"b":4},{"id":"w165","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 10 שׁוּרוֹת, וּבְכָל שׁוּרָה 7 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":10,"b":7},{"id":"w166","level":2,"text":"בְּתַחֲרוּת יֵשׁ 9 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 10 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":9,"b":10},{"id":"w167","level":2,"text":"בְּתַחֲרוּת יֵשׁ 10 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":10,"b":5},{"id":"w168","level":2,"text":"בְּתַחֲרוּת יֵשׁ 10 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 8 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":10,"b":8},{"id":"w169","level":2,"text":"בְּתַחֲרוּת יֵשׁ 6 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 3 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":6,"b":3},{"id":"w170","level":2,"text":"בְּתַחֲרוּת יֵשׁ 6 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 6 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":6,"b":6},{"id":"w171","level":2,"text":"מְסַדְּרִים 10 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 9. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":10,"b":9},{"id":"w172","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 4. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":4},{"id":"w173","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 7. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":7},{"id":"w174","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 10. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":10},{"id":"w175","level":2,"text":"מְסַדְּרִים 7 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 5. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":7,"b":5},{"id":"w176","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 8 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 6 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":6,"b":8},{"id":"w177","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 3 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":3},{"id":"w178","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 6 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":6},{"id":"w179","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 9 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":9},{"id":"w180","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 4 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 8 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":8,"b":4},{"id":"w181","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 7 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 7 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":7,"b":7},{"id":"w182","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 10 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 7 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":7,"b":10},{"id":"w183","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 5 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 8 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":8,"b":5},{"id":"w184","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 8 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 8 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":8,"b":8},{"id":"w185","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 3 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 9 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":9,"b":3},{"id":"w186","level":2,"text":"בְּסֵפֶר יֵשׁ 8 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 6 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":8,"b":6},{"id":"w187","level":2,"text":"בְּסֵפֶר יֵשׁ 8 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 9 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":8,"b":9},{"id":"w188","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 4 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":4},{"id":"w189","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 7 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":7},{"id":"w190","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 10 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":10},{"id":"w191","level":2,"text":"רוֹצִים לְמַלֵּא 9 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־5 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":9,"b":5},{"id":"w192","level":2,"text":"רוֹצִים לְמַלֵּא 9 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־8 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":9,"b":8},{"id":"w193","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־3 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":3},{"id":"w194","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־6 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":6},{"id":"w195","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־9 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":9},{"id":"w196","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 4 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":4},{"id":"w197","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 7 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":7},{"id":"w198","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 10 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":10},{"id":"w199","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 5 אֲבָנִים. מְשַׂחֲקִים 6 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":6,"b":5},{"id":"w200","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 8 אֲבָנִים. מְשַׂחֲקִים 6 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":6,"b":8}];
+"use strict";
+
+// One personal game, persisted only in this browser. No accounts or network API.
+class PersonalGame {
+  static storageKey = "shaked.multiplication.personal.v5";
+
+  constructor(bank, storage) {
+    this.bank = bank;
+    this.storage = storage;
+    this.storageAvailable = true;
+    this.state = this.fresh();
+    try {
+      const saved = JSON.parse(storage.getItem(PersonalGame.storageKey));
+      if (saved?.version === 5) {
+        for (const activity of ["quick", "words", "maze"]) {
+          const level = saved.unlocked?.[activity];
+          if (Number.isInteger(level) && level >= 0 && level <= 2)
+            this.state.unlocked[activity] = level;
+        }
+        for (const activity of ["table", "quick", "words", "maze"])
+          if (this.validRun(saved.runs?.[activity], activity))
+            this.state.runs[activity] = saved.runs[activity];
+      } else if (!saved) {
+        // Retain the multiplication table from the original personal edition.
+        const old = JSON.parse(storage.getItem("shaked.multiplication.v3"));
+        if (old?.version === 3 && Array.isArray(old.table) && old.table.length === 100) {
+          const run = this.newRun("table", 0);
+          run.values = old.table.map(v => typeof v === "string" ? v.slice(0, 3) : "");
+          this.state.runs.table = run;
+          if (Number.isInteger(old.unlocked) && old.unlocked >= 0 && old.unlocked <= 2)
+            this.state.unlocked.maze = old.unlocked;
+        }
+      }
+    } catch { /* Unavailable or damaged saved data never blocks playing. */ }
+    this.save();
+  }
+
+  fresh() {
+    return { version: 5, runs: { table: null, quick: null, words: null, maze: null },
+      unlocked: { quick: 0, words: 0, maze: 0 } };
+  }
+
+  validRun(r, activity) {
+    if (!r || r.activity !== activity || typeof r.id !== "string" ||
+        !["active", "passed", "retry"].includes(r.status) ||
+        !Number.isInteger(r.level) || r.level < 0 || r.level > 2) return false;
+    if (activity === "table")
+      return [r.values, r.marks, r.first].every(a => Array.isArray(a) && a.length === 100) &&
+        r.values.every(v => typeof v === "string" && v.length <= 3) &&
+        r.marks.every(v => ["", "correct", "wrong"].includes(v)) &&
+        r.first.every(v => v === null || typeof v === "boolean");
+    const total = activity === "maze" ? [10, 15, 20][r.level] : 20;
+    if (!Array.isArray(r.questions) || r.questions.length !== total ||
+        !r.questions.every(q => Number.isInteger(q.a) && q.a >= 1 && q.a <= 10 &&
+          Number.isInteger(q.b) && q.b >= 1 && q.b <= 10 &&
+          (activity !== "words" || typeof q.text === "string")) ||
+        !Number.isInteger(r.index) || r.index < 0 || r.index > total ||
+        !Number.isInteger(r.tries) || r.tries < 0 ||
+        !Number.isInteger(r.completed) || r.completed < 0 || r.completed > total ||
+        !Number.isInteger(r.first_correct) || r.first_correct < 0 || r.first_correct > total ||
+        !Number.isFinite(r.points) || r.points < 0 ||
+        typeof r.solved !== "boolean" || typeof r.revealed !== "boolean") return false;
+    if (activity !== "maze") return r.index < total;
+    return Array.isArray(r.grid) && r.grid.length === 9 &&
+      r.grid.every(row => Array.isArray(row) && row.length === 9 && row.every(v => v === 0 || v === 1)) &&
+      [r.x, r.y, r.goal?.x, r.goal?.y].every(v => Number.isInteger(v) && v >= 0 && v < 9) &&
+      r.grid[r.y][r.x] === 0 && r.grid[r.goal.y][r.goal.x] === 0 &&
+      Array.isArray(r.visited) && r.visited.length === 81 &&
+      Number.isInteger(r.lives) && r.lives >= 0 && r.lives <= 3 &&
+      Number.isInteger(r.moves) && r.moves >= 0 && r.moves <= 3 && typeof r.pending === "boolean";
+  }
+
+  save() {
+    try {
+      this.storage.setItem(PersonalGame.storageKey, JSON.stringify(this.state));
+      this.storageAvailable = true;
+    } catch { this.storageAvailable = false; }
+    return this.storageAvailable;
+  }
+
+  shuffle(items) {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  newRun(activity, level) {
+    const id = globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2);
+    const run = { id, activity, level, status: "active", first_correct: 0, completed: 0, score: null };
+    if (activity === "table") return Object.assign(run, {
+      total: 100, values: Array(100).fill(""), marks: Array(100).fill(""), first: Array(100).fill(null)
+    });
+    let pool;
+    if (activity === "words") pool = this.bank.filter(q => q.level === level);
+    else {
+      pool = [];
+      for (let a = [1, 2, 6][level]; a <= [5, 10, 10][level]; a++)
+        for (let b = 1; b <= 10; b++) pool.push({ a, b, text: null, id: `q${a}-${b}` });
+    }
+    const total = activity === "maze" ? [10, 15, 20][level] : 20;
+    Object.assign(run, { total, questions: this.shuffle(pool).slice(0, total),
+      index: 0, tries: 0, solved: false, revealed: false, points: 0 });
+    if (activity === "maze") Object.assign(run, this.makeMaze());
+    return run;
+  }
+
+  makeMaze() {
+    const grid = Array.from({ length: 9 }, () => Array(9).fill(1));
+    const stack = [[1, 1]];
+    grid[1][1] = 0;
+    while (stack.length) {
+      const [x, y] = stack[stack.length - 1];
+      const options = [[2, 0], [-2, 0], [0, 2], [0, -2]].filter(([dx, dy]) =>
+        x + dx > 0 && x + dx < 8 && y + dy > 0 && y + dy < 8 && grid[y + dy][x + dx]);
+      if (!options.length) { stack.pop(); continue; }
+      const [dx, dy] = options[Math.floor(Math.random() * options.length)];
+      grid[y + dy / 2][x + dx / 2] = 0;
+      grid[y + dy][x + dx] = 0;
+      stack.push([x + dx, y + dy]);
+    }
+    const queue = [[1, 1]], seen = new Set([10]);
+    for (let i = 0; i < queue.length; i++) {
+      const [x, y] = queue[i];
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy, key = ny * 9 + nx;
+        if (grid[ny]?.[nx] === 0 && !seen.has(key)) { seen.add(key); queue.push([nx, ny]); }
+      }
+    }
+    const [gx, gy] = queue[queue.length - 1];
+    return { grid, x: 1, y: 1, goal: { x: gx, y: gy }, moves: 0, pending: false,
+      lives: 3, visited: Array.from({ length: 81 }, (_, i) => i === 10) };
+  }
+
+  snapshot() {
+    const result = JSON.parse(JSON.stringify(this.state));
+    for (const run of Object.values(result.runs)) {
+      if (!run || run.activity === "table") continue;
+      const q = run.questions[run.index];
+      if (q) {
+        run.question = { key: `${run.id}:${run.index}`, a: q.a, b: q.b, text: q.text };
+        if (run.revealed) run.question.answer = q.a * q.b;
+      }
+      delete run.questions;
+    }
+    return result;
+  }
+
+  finish(run) {
+    if (run.status !== "active") return;
+    run.score = Math.round(run.first_correct / run.total * 10000) / 100;
+    run.status = run.score >= 80 ? "passed" : "retry";
+    if (run.status === "passed" && run.activity !== "table")
+      this.state.unlocked[run.activity] = Math.max(this.state.unlocked[run.activity], Math.min(2, run.level + 1));
+  }
+
+  mazeFinish(run) {
+    if (run.completed === run.total && !run.pending && run.x === run.goal.x && run.y === run.goal.y)
+      this.finish(run);
+  }
+
+  mazeAdvance(run) {
+    Object.assign(run, { index: run.index + 1, tries: 0, solved: false, revealed: false,
+      pending: false, moves: 0, lives: 3 });
+    this.mazeFinish(run);
+  }
+
+  currentQuestion(run, payload) {
+    if (payload.question_key !== `${run.id}:${run.index}` || !run.questions?.[run.index])
+      throw new Error("הַשְּׁאֵלָה הִתְעַדְּכְנָה. נַעֲנֶה עַל הַשְּׁאֵלָה הַמֻּצֶּגֶת.");
+    return run.questions[run.index];
+  }
+
+  table(action, payload) {
+    let run = this.state.runs.table;
+    if (payload.run_id && run?.id !== payload.run_id) throw new Error("הַלּוּחַ הִתְעַדְּכֵן.");
+    if (!run || action === "table_clear") run = this.state.runs.table = this.newRun("table", 0);
+    if (action === "table_clear" || run.status !== "active") return false;
+    if (!Array.isArray(payload.values) || payload.values.length !== 100) throw new Error("הַלּוּחַ אֵינוֹ תַּקִּין.");
+    let filled = 0, correct = 0;
+    payload.values.forEach((raw, i) => {
+      const value = String(raw).trim().slice(0, 3);
+      const good = /^[0-9]{1,3}$/.test(value) && Number(value) === (Math.floor(i / 10) + 1) * (i % 10 + 1);
+      if (value !== run.values[i]) run.marks[i] = "";
+      run.values[i] = value;
+      if (action === "table_clear_wrong" && value && !good) { run.values[i] = ""; run.marks[i] = ""; }
+      if (action === "table_check") {
+        run.marks[i] = value ? (good ? "correct" : "wrong") : "";
+        if (value) { filled++; correct += Number(good); if (run.first[i] === null) run.first[i] = good; }
+      }
+    });
+    run.first_correct = run.first.filter(v => v === true).length;
+    run.completed = run.marks.filter(v => v === "correct").length;
+    if (action === "table_check" && filled === 100 && correct === 100) this.finish(run);
+    return action === "table_check" && filled > 0 && filled === correct;
+  }
+
+  perform(action, payload = {}) {
+    let celebrate = false;
+    if (action === "start") {
+      const { activity, level } = payload;
+      if (!["quick", "words", "maze"].includes(activity) || !Number.isInteger(level) || level < 0 || level > this.state.unlocked[activity])
+        throw new Error("קֹדֶם נְסַיֵּם אֶת הָרָמָה הַקּוֹדֶמֶת עִם לְפָחוֹת 80% הַצְלָחָה.");
+      if (this.state.runs[activity]?.status !== "active") this.state.runs[activity] = this.newRun(activity, level);
+    } else if (["table_save", "table_check", "table_clear_wrong", "table_clear"].includes(action)) {
+      celebrate = this.table(action, payload);
+    } else if (action !== "sync") {
+      const run = Object.values(this.state.runs).find(r => r?.id === payload.run_id);
+      if (!run) throw new Error("נִפְתַּח אֶת הַמִּשְׂחָק וְנַמְשִׁיךְ.");
+      if (action === "maze_restart" && run.activity === "maze") this.state.runs.maze = this.newRun("maze", run.level);
+      else if (run.status === "active") {
+        if (action === "move" && run.activity === "maze") {
+          if (!run.pending) {
+            const delta = { right: [1, 0], left: [-1, 0], up: [0, -1], down: [0, 1] }[payload.direction];
+            if (!delta) throw new Error("כִּוּוּן לֹא תַּקִּין.");
+            const nx = run.x + delta[0], ny = run.y + delta[1];
+            if (run.grid[ny]?.[nx] === 0) {
+              run.x = nx; run.y = ny; run.visited[ny * 9 + nx] = true;
+              if (run.completed < run.total && ++run.moves === 3) run.pending = true;
+              this.mazeFinish(run);
+            }
+          }
+        } else if (action === "answer") {
+          const q = this.currentQuestion(run, payload);
+          if (run.activity === "maze" && !run.pending) throw new Error("קֹדֶם מִתְקַדְּמִים בַּמָּבוֹךְ.");
+          if (!run.solved && !(run.activity === "maze" && run.revealed)) {
+            const answer = String(payload.answer ?? "").trim();
+            if (!/^[0-9]{1,3}$/.test(answer)) throw new Error("נַקְלִיד מִסְפָּר שָׁלֵם.");
+            if (Number(answer) === q.a * q.b) {
+              if (run.tries === 0) run.first_correct++;
+              run.points += run.tries === 0 ? 10 : 5;
+              run.solved = true; run.completed++; celebrate = true;
+              if (run.activity === "maze") this.mazeAdvance(run);
+              else if (run.completed === run.total) this.finish(run);
+            } else {
+              run.tries++;
+              if (run.activity === "maze") run.lives = Math.max(0, 3 - run.tries);
+              if (run.tries >= 3) run.revealed = true;
+            }
+          }
+        } else if (action === "next" && ["quick", "words"].includes(run.activity)) {
+          this.currentQuestion(run, payload);
+          if (!run.solved) throw new Error("קֹדֶם נַקְלִיד תְּשׁוּבָה נְכוֹנָה.");
+          Object.assign(run, { index: run.index + 1, tries: 0, solved: false, revealed: false });
+        } else if (action === "maze_continue" && run.activity === "maze") {
+          this.currentQuestion(run, payload);
+          if (!run.pending || !run.revealed || run.tries < 3) throw new Error("קֹדֶם נַעֲנֶה עַל הַשְּׁאֵלָה.");
+          run.completed++; this.mazeAdvance(run);
+        } else throw new Error("פְּעֻלָּה לֹא מַתְאִימָה לַמִּשְׂחָק.");
+      }
+    }
+    this.save();
+    return { snapshot: this.snapshot(), celebrate };
+  }
+}
+
+if (typeof module !== "undefined") module.exports = { PersonalGame };
+
 "use strict";
 const $ = (id) => document.getElementById(id);
 const LEVEL_NAMES = ["א׳", "ב׳", "ג׳"];
-const GAME_NAMES = {
-  quick: "תִּרְגּוּל מָהִיר",
-  words: "שְׁאֵלוֹת מִלּוּלִיּוֹת",
-  maze: "הַמָּבוֹךְ",
-  table: "לוּחַ הַכֶּפֶל",
-};
-let snapshot = null,
-  configured = false,
-  ready = false,
-  page = "home",
-  afterLogin = "home",
-  authMode = "login";
-let pending = null,
-  lastReply = null,
-  lastHeight = 0,
-  heightQueued = false,
-  queue = [],
-  fireworkTimer = null;
+let page = "home", lastHeight = 0, heightQueued = false, fireworkTimer = null;
+let pending = null;
 let tableDraft = Array(100).fill(""),
   draftRun = null,
   dirty = false,
@@ -2004,9 +1722,6 @@ const fixed = (value) =>
   value === null || value === undefined
     ? "—"
     : Number(value).toLocaleString("he-IL", { maximumFractionDigits: 2 });
-const uid = () =>
-  globalThis.crypto?.randomUUID?.() ||
-  "r_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2);
 const normalizeDigits = (value) =>
   value
     .replace(/[٠-٩]/g, (c) => String(c.charCodeAt(0) - 1632))
@@ -2043,88 +1758,30 @@ function status(id, text, kind = "") {
   el.className = "status " + kind;
   resizeFrame();
 }
+function storageNotice() {
+  $("storage-note").hidden = game.storageAvailable;
+}
 function rpc(action, payload = {}) {
-  return new Promise((resolve, reject) => {
-    queue.push({ id: uid(), action, payload, resolve, reject, retries: 0 });
-    pump();
-  });
+  try {
+    const reply = game.perform(action, payload);
+    snapshot = reply.snapshot;
+    renderAll();
+    storageNotice();
+    if (reply.celebrate) fireworks();
+    return Promise.resolve(reply);
+  } catch (error) {
+    return Promise.reject(error);
+  }
 }
-function pump() {
-  if (pending || !queue.length) return;
-  pending = queue.shift();
-  setBusy(true);
-  sendPending();
-}
-function sendPending() {
-  const p = pending;
-  if (!p) return;
-  message("streamlit:setComponentValue", {
-    dataType: "json",
-    value: { id: p.id, action: p.action, payload: p.payload, nonce: uid() },
-  });
-  clearTimeout(p.timer);
-  p.timer = setTimeout(() => {
-    if (!pending || pending.id !== p.id) return;
-    if (p.retries++ < 1) {
-      sendPending();
-      return;
-    }
-    pending = null;
-    p.reject(new Error("הַחִבּוּר אִטִּי. נִרְעֲנֵן כְּדֵי לִבְדֹּק אִם הַפְּעֻלָּה נִשְׁמְרָה."));
-    setBusy(false);
-    pump();
-  }, 18000);
-}
-function setBusy(busy) {
-  $("network-state").hidden = !busy;
-  document.body.classList.toggle("busy", busy);
-  document.querySelectorAll("[data-server]").forEach((el) => {
-    el.disabled = busy || el.dataset.locked === "true";
-  });
-}
-function serverButton(button, locked = false) {
-  button.dataset.server = "true";
-  button.dataset.locked = String(locked);
-  button.disabled = !!pending || locked;
-}
+function gameButton(button, locked = false) { button.disabled = locked; }
 function actionError(error, target = "global-status") {
   status(target, error.message || "הַפְּעֻלָּה לֹא הֻשְׁלְמָה. נְנַסֶּה שׁוּב.", "error");
 }
-window.addEventListener("message", (event) => {
-  if (event.source !== window.parent || event.data?.type !== "streamlit:render") return;
-  const args = event.data.args || {};
-  configured = !!args.configured;
-  ready = true;
-  const reply = args.response;
-  if (reply && reply.id !== lastReply) {
-    lastReply = reply.id;
-    if (Object.hasOwn(reply, "snapshot")) snapshot = reply.snapshot;
-    const current = pending && pending.id === reply.id ? pending : null;
-    if (current) {
-      clearTimeout(current.timer);
-      pending = null;
-    }
-    renderAll();
-    if (reply.ok && reply.celebrate) fireworks();
-    if (current) {
-      current.payload = null;
-      if (reply.ok) current.resolve(reply);
-      else current.reject(new Error(reply.error));
-    }
-    setBusy(false);
-    pump();
-  } else if (!lastReply) {
-    snapshot = args.snapshot || null;
-    renderAll();
-  }
-  resizeFrame();
+window.addEventListener("message", event => {
+  if (event.source === window.parent && event.data?.type === "streamlit:render") resizeFrame();
 });
 function navigate(next) {
-  if (!["home", "login", "ranking", "table", "quick", "words", "maze"].includes(next)) return;
-  if (!snapshot && !["home", "login"].includes(next)) {
-    afterLogin = next;
-    next = "login";
-  }
+  if (!["home", "table", "quick", "words", "maze"].includes(next)) return;
   if (page === "table" && next !== "table" && dirty) flushTable().catch(actionError);
   page = next;
   document.querySelectorAll(".page").forEach((el) => (el.hidden = el.id !== "page-" + page));
@@ -2136,7 +1793,6 @@ function navigate(next) {
   });
   status("global-status", "");
   renderAll();
-  if (page === "ranking" && snapshot) rpc("sync").catch(actionError);
   $("app").scrollIntoView({ block: "start", behavior: "instant" });
   resizeFrame();
 }
@@ -2144,97 +1800,12 @@ document
   .querySelectorAll("[data-page]")
   .forEach((button) => button.addEventListener("click", () => navigate(button.dataset.page)));
 function renderAll() {
-  const user = snapshot?.player;
-  $("nav-login").hidden = !!user;
-  $("account-greeting").textContent = user
-    ? `${user.first_name} ${user.last_name} · כִּתָּה ${user.class_name}`
-    : "נִכְנָסִים עִם הַשֵּׁם וְהַקּוֹד, וּמַתְחִילִים לְשַׂחֵק.";
-  $("account-action").textContent = user ? "הַחְלָפַת שַׂחְקָן" : "כְּנִיסָה לַמִּשְׂחָק";
-  serverButton($("auth-submit"), !ready || !configured);
-  if (ready && !configured)
-    status("auth-status", "הַמֶּרְחָב הַכִּתָּתִי בַּהֲכָנָה. הַכְּנִיסָה תִּפָּתַח בְּקָרוֹב.");
-  if (user) {
-    renderTable();
-    renderQuiz("quick");
-    renderQuiz("words");
-    renderMaze();
-    renderRanking();
-  }
+  renderTable();
+  renderQuiz("quick");
+  renderQuiz("words");
+  renderMaze();
   resizeFrame();
 }
-function setAuthMode(mode) {
-  authMode = mode;
-  for (const name of ["login", "register"]) {
-    const on = name === mode;
-    const b = $("auth-" + name);
-    b.className = "btn" + (on ? "" : " secondary");
-    b.setAttribute("aria-pressed", String(on));
-  }
-  $("auth-submit").textContent =
-    mode === "register" ? "נִרְשָׁמִים וּמַתְחִילִים ←" : "נִכְנָסִים לְשַׂחֵק ←";
-  $("auth-pin").autocomplete = mode === "register" ? "new-password" : "current-password";
-  $("auth-hint").textContent =
-    mode === "register"
-      ? "בּוֹחֲרִים קוֹד שֶׁנּוּכַל לִזְכֹּר. הַקּוֹד אֵינוֹ מֻצָּג בַּדֵּרוּג."
-      : "נַקְלִיד אֶת אוֹתָם הַפְּרָטִים שֶׁבָּחַרְנוּ בַּהַרְשָׁמָה.";
-  status("auth-status", "");
-}
-$("auth-login").addEventListener("click", () => setAuthMode("login"));
-$("auth-register").addEventListener("click", () => setAuthMode("register"));
-$("auth-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!configured || pending) return;
-  const data = {
-    first: $("auth-first").value.trim(),
-    last: $("auth-last").value.trim(),
-    class_name: $("auth-class").value.trim(),
-    pin: $("auth-pin").value,
-  };
-  if (!data.first || !data.last || !data.class_name || !/^\d{4}$/.test(data.pin)) {
-    status(
-      "auth-status",
-      "נְמַלֵּא שֵׁם, שֵׁם מִשְׁפָּחָה, כִּתָּה וְקוֹד בֶּן אַרְבַּע סְפָרוֹת.",
-      "warning",
-    );
-    return;
-  }
-  try {
-    await rpc(authMode, data);
-    $("auth-pin").value = "";
-    questionKeys = {};
-    dirty = false;
-    draftRun = null;
-    status("auth-status", "");
-    navigate(afterLogin);
-    rpc("sync").catch(actionError);
-  } catch (error) {
-    actionError(error, "auth-status");
-    $("auth-pin").select();
-  }
-});
-$("account-action").addEventListener("click", async () => {
-  if (!snapshot) {
-    navigate("login");
-    return;
-  }
-  try {
-    if (dirty) await flushTable();
-    await rpc("logout");
-    clearTimeout(saveTimer);
-    dirty = false;
-    draftRun = null;
-    tableDraft = Array(100).fill("");
-    questionKeys = {};
-    $("auth-pin").value = "";
-    $("auth-first").value = "";
-    $("auth-last").value = "";
-    $("auth-class").value = "";
-    afterLogin = "home";
-    navigate("login");
-  } catch (error) {
-    actionError(error);
-  }
-});
 
 function fireworks() {
   clearTimeout(fireworkTimer);
@@ -2256,7 +1827,7 @@ function fireworks() {
   fireworkTimer = setTimeout(() => layer.replaceChildren(), 2900);
 }
 
-// Preserve the spreadsheet geometry. Drafts belong to the signed-in player only.
+// Preserve the spreadsheet geometry and save every edit on this device.
 function createTable() {
   const frag = document.createDocumentFragment();
   for (let r = 0; r <= 10; r++)
@@ -2292,7 +1863,7 @@ function createTable() {
           $("table-draft-note").textContent = "מַמְתִּינִים לִשְׁמִירָה…";
           status("table-status", "");
           clearTimeout(saveTimer);
-          saveTimer = setTimeout(() => flushTable().catch(actionError), 700);
+          flushTable().catch(actionError);
         });
         input.addEventListener("keydown", (event) => {
           const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -10, ArrowDown: 10, Enter: 1 }[
@@ -2333,13 +1904,13 @@ function renderTable() {
   $("table-zoom").setAttribute("aria-pressed", String(large));
   $("table-zoom").textContent = large ? "כָּל הַלּוּחַ בַּמָּסָךְ ⤡" : "הַגְדָּלַת הַתָּאִים ⤢";
   $("zoom-hint").hidden = !large;
-  serverButton($("check-table"), !!t && t.status !== "active");
-  serverButton($("clear-wrong"), !!t && t.status !== "active");
-  serverButton($("clear-table"));
+  gameButton($("check-table"), !!t && t.status !== "active");
+  gameButton($("clear-wrong"), !!t && t.status !== "active");
+  gameButton($("clear-table"));
   if (t && t.status !== "active")
     status(
       "table-status",
-      `הַלּוּחַ הֻשְׁלַם! הַצִּיּוּן ${fixed(t.score)} נִשְׁמַר בַּדֵּרוּג. לְלוּחַ חָדָשׁ לוֹחֲצִים עַל מְחִיקַת הַכֹּל.`,
+      `הַלּוּחַ הֻשְׁלַם! הַצִּיּוּן ${fixed(t.score)}  לְלוּחַ חָדָשׁ לוֹחֲצִים עַל מְחִיקַת הַכֹּל.`,
       "success",
     );
 }
@@ -2354,7 +1925,7 @@ async function tableAction(action) {
     if (version === draftVersion) {
       dirty = false;
       renderTable();
-      $("table-draft-note").textContent = "הַשִּׁנּוּיִים נִשְׁמְרוּ ✓";
+      $("table-draft-note").textContent = game.storageAvailable ? "נִשְׁמַר ✓" : "";
     }
     if (action === "table_check" && snapshot.runs.table?.status === "active") {
       const marks = snapshot.runs.table.marks,
@@ -2414,7 +1985,7 @@ function levels(activity, id) {
     button.setAttribute("aria-pressed", String(run?.level === level));
     const total = activity === "maze" ? [10, 15, 20][level] : 20;
     button.innerHTML = `<strong>${level > opened ? "🔒 " : ""}רָמָה ${LEVEL_NAMES[level]}</strong><small>${n(total)} ${activity === "maze" ? "שְׁלָבִים" : "שְׁאֵלוֹת"}</small>`;
-    serverButton(button, locked);
+    gameButton(button, locked);
     button.addEventListener("click", () => rpc("start", { activity, level }).catch(actionError));
     container.append(button);
   }
@@ -2424,12 +1995,6 @@ function renderQuiz(activity) {
   levels(activity, activity + "-levels");
   $(activity + "-start").hidden = !!run;
   $(activity + "-card").hidden = !run;
-  $(activity + "-level-note").textContent =
-    run?.status === "active"
-      ? "הַסֶּבֶב הַנּוֹכְחִי נִשְׁמָר. מְסַיְּמִים אוֹתוֹ לִפְנֵי שֶׁמַּתְחִילִים סֶבֶב אַחֵר."
-      : activity === "words"
-        ? "בְּכָל נִסָּיוֹן מֻגְרָלוֹת שְׁאֵלוֹת מַתְאִימוֹת לָרָמָה מִמַּאֲגָר שֶׁל 200 שְׁאֵלוֹת."
-        : "";
   if (!run) return;
   $(activity + "-progress-label").innerHTML =
     `רָמָה ${LEVEL_NAMES[run.level]} · שְׁאֵלָה ${n(Math.min(run.index + 1, 20) + " / 20")}`;
@@ -2451,8 +2016,8 @@ function renderQuiz(activity) {
   if (activity === "quick") $("quick-exercise").textContent = `${q.a} × ${q.b} = ?`;
   else $("words-question").innerHTML = esc(q.text).replace(/\d+/g, (x) => n(x));
   input.disabled = run.solved;
-  serverButton($(activity + "-submit"), run.solved);
-  serverButton($(activity + "-next"), !run.solved);
+  gameButton($(activity + "-submit"), run.solved);
+  gameButton($(activity + "-next"), !run.solved);
   $(activity + "-reveal").hidden = !run.revealed;
   if (run.revealed)
     $(activity + "-solution").textContent =
@@ -2479,14 +2044,14 @@ function renderQuizResult(activity, run) {
   value.className = "result-number";
   value.textContent = fixed(run.score) + " / 100";
   const text = document.createElement("p");
-  text.innerHTML = `${n(run.first_correct + " / 20")} תְּשׁוּבוֹת נְכוֹנוֹת בַּנִּסָּיוֹן הָרִאשׁוֹן. הַצִּיּוּן נִכְלַל בַּמְּמֻצָּע.${run.status === "passed" ? "" : " נְנַסֶּה שׁוּב כְּדֵי לְהַגִּיעַ לְ־" + n("80%") + "."}`;
+  text.innerHTML = `${n(run.first_correct + " / 20")} תְּשׁוּבוֹת נְכוֹנוֹת בַּנִּסָּיוֹן הָרִאשׁוֹן.${run.status === "passed" ? "" : " נְנַסֶּה שׁוּב כְּדֵי לְהַגִּיעַ לְ־" + n("80%") + "."}`;
   const actions = document.createElement("div");
   actions.className = "quiz-end-actions";
   if (run.status === "passed" && run.level < 2) {
     const next = document.createElement("button");
     next.className = "btn";
     next.textContent = "לָרָמָה הַבָּאָה ←";
-    serverButton(next);
+    gameButton(next);
     next.addEventListener("click", () =>
       rpc("start", { activity, level: run.level + 1 }).catch(actionError),
     );
@@ -2495,7 +2060,7 @@ function renderQuizResult(activity, run) {
   const again = document.createElement("button");
   again.className = "btn secondary";
   again.textContent = "הַגְרָלָה חֲדָשָׁה בְּאוֹתָהּ רָמָה";
-  serverButton(again);
+  gameButton(again);
   again.addEventListener("click", () =>
     rpc("start", { activity, level: run.level }).catch(actionError),
   );
@@ -2574,8 +2139,8 @@ function renderMaze() {
   $("maze-end").hidden = m.status === "active";
   document
     .querySelectorAll("[data-move]")
-    .forEach((button) => serverButton(button, m.pending || m.status !== "active"));
-  serverButton($("maze-restart"));
+    .forEach((button) => gameButton(button, m.pending || m.status !== "active"));
+  gameButton($("maze-restart"));
   $("maze-restart").textContent = restartConfirm
     ? "לְהַתְחִיל מֵחָדָשׁ? לְחִיצָה נוֹסֶפֶת לְאִשּׁוּר"
     : "הַתְחָלַת הָרָמָה מֵחָדָשׁ ↻";
@@ -2591,8 +2156,8 @@ function renderMaze() {
       $("maze-answer").value = "";
       questionKeys.maze = q.key;
     }
-    serverButton($("maze-form").querySelector("button"), m.revealed);
-    serverButton($("maze-continue"), !m.revealed);
+    gameButton($("maze-form").querySelector("button"), m.revealed);
+    gameButton($("maze-continue"), !m.revealed);
     status(
       "maze-answer-status",
       m.tries && !m.revealed ? `נְנַסֶּה שׁוּב. נוֹתְרוּ ${m.lives} לְבָבוֹת.` : "",
@@ -2666,10 +2231,6 @@ $("maze-continue").addEventListener("click", async () => {
 function renderMazeEnd(m) {
   const box = $("maze-end-content");
   box.replaceChildren();
-  if (m.status === "lost")
-    box.innerHTML =
-      '<div class="dragon-stage" aria-hidden="true"><span class="kid">🧒</span><span class="dragon">🐉</span></div><h3>הַדְּרָקוֹן הַשּׁוֹבָב הִגִּיעַ!</h3><p>לֹא נוֹרָא! נְנַסֶּה שׁוּב וְנִשְׁתַּפֵּר.</p>';
-  else
     box.innerHTML =
       '<div class="end-icon" aria-hidden="true">' +
       (m.status === "passed" ? "🏆" : "🌱") +
@@ -2679,13 +2240,13 @@ function renderMazeEnd(m) {
         : "הִגַּעְנוּ לַדֶּגֶל! נְנַסֶּה שׁוּב לְ־80%.") +
       "</h3>";
   const score = document.createElement("p");
-  score.innerHTML = `הַצִּיּוּן ${n(fixed(m.score) + " / 100")} נִשְׁמַר בַּדֵּרוּג.`;
+  score.innerHTML = `הַצִּיּוּן ${n(fixed(m.score) + " / 100")} `;
   box.append(score);
   if (m.status === "passed" && m.level < 2) {
     const next = document.createElement("button");
     next.className = "btn";
     next.textContent = "לָרָמָה הַבָּאָה ←";
-    serverButton(next);
+    gameButton(next);
     next.addEventListener("click", () =>
       rpc("start", { activity: "maze", level: m.level + 1 }).catch(actionError),
     );
@@ -2694,7 +2255,7 @@ function renderMazeEnd(m) {
   const again = document.createElement("button");
   again.className = "btn secondary";
   again.textContent = "נִסָּיוֹן חָדָשׁ · שְׁלוֹשָׁה לְבָבוֹת";
-  serverButton(again);
+  gameButton(again);
   again.addEventListener("click", () => rpc("maze_restart", { run_id: m.id }).catch(actionError));
   box.append(again);
 }
@@ -2710,71 +2271,16 @@ $("maze-restart").addEventListener("click", () => {
   rpc("maze_restart", { run_id: m.id }).catch((error) => actionError(error, "maze-status"));
 });
 
-function renderRanking() {
-  const s = snapshot;
-  $("ranking-class").textContent = "הַדֵּרוּג הַמְּשֻׁתָּף שֶׁל כִּתָּה " + s.player.class_name;
-  $("my-average").textContent = fixed(s.stats.average);
-  $("my-games").textContent = s.stats.games;
-  $("my-rank").textContent = s.leaderboard.find((x) => x.self)?.rank || "—";
-  const body = $("ranking-body");
-  body.replaceChildren();
-  for (const row of s.leaderboard) {
-    const tr = document.createElement("tr");
-    if (row.self) tr.className = "self";
-    const values = [
-      row.rank,
-      row.first_name + " " + row.last_name,
-      row.class_name,
-      fixed(row.average),
-      row.games,
-    ];
-    values.forEach((value, i) => {
-      const td = document.createElement("td");
-      td.textContent = value;
-      if ([0, 3, 4].includes(i)) td.className = "numeric-cell";
-      if (i === 1) td.className = "name-cell";
-      tr.append(td);
-    });
-    body.append(tr);
-  }
-  $("ranking-empty").hidden = !!s.leaderboard.length;
-  const history = $("history-list");
-  history.replaceChildren();
-  for (const row of s.recent) {
-    const el = document.createElement("div");
-    el.className = "history-row";
-    const text = document.createElement("div");
-    text.textContent =
-      GAME_NAMES[row.activity] +
-      (row.activity === "table" ? "" : " · רָמָה " + LEVEL_NAMES[row.level]);
-    const date = document.createElement("small");
-    const bdi = document.createElement("bdi");
-    bdi.textContent = new Date(row.finished * 1000).toLocaleString("he-IL", {
-      dateStyle: "short",
-      timeStyle: "short",
-    });
-    date.append(bdi);
-    text.append(date);
-    const score = document.createElement("bdi");
-    score.className = "history-score";
-    score.textContent = fixed(row.score);
-    el.append(text, score);
-    history.append(el);
-  }
-  if (!s.recent.length) {
-    const empty = document.createElement("p");
-    empty.className = "subtle";
-    empty.textContent = "הַתּוֹצָאוֹת יוֹפִיעוּ כָּאן אַחֲרֵי סִיּוּם הַמִּשְׂחָק הָרִאשׁוֹן.";
-    history.append(empty);
-  }
-  serverButton($("refresh-ranking"));
-}
-$("refresh-ranking").addEventListener("click", () => rpc("sync").catch(actionError));
-setInterval(() => {
-  if (page === "ranking" && snapshot && !pending && document.visibilityState === "visible")
-    rpc("sync").catch(actionError);
-}, 25000);
+let browserStorage;
+try { browserStorage = window.localStorage; }
+catch { browserStorage = { getItem() { return null; }, setItem() { throw new Error("unavailable"); } }; }
+const game = new PersonalGame(WORD_BANK, browserStorage);
+let snapshot = game.snapshot();
 createTable();
+renderAll();
+storageNotice();
+window.addEventListener("pagehide", () => { if (dirty) flushTable().catch(() => {}); });
+
 message("streamlit:componentReady", { apiVersion: 1 });
 if ("ResizeObserver" in window) new ResizeObserver(resizeFrame).observe($("app"));
 window.addEventListener("resize", resizeFrame);
@@ -2783,95 +2289,20 @@ resizeFrame();
 </script>
 </body></html>'''
 
-def run_streamlit():
-    import tempfile
-    import logging
-    import streamlit as st
-    import streamlit.components.v1 as components
+st.set_page_config(page_title="לוּחַ הַכֶּפֶל שֶׁל שָׁקֵד בֶּן עֶזְרָא",page_icon="🌱",layout="wide")
+st.markdown("""<style>
+.stApp,[data-testid="stAppViewContainer"]{background:#f7f5ee}
+[data-testid="stMainBlockContainer"],.block-container{max-width:1100px;padding:.5rem .25rem 1rem}
+[data-testid="stHeader"]{display:none}
+@media(max-width:600px){[data-testid="stMainBlockContainer"],.block-container{padding:.25rem 0 .5rem}}
+</style>""",unsafe_allow_html=True)
 
-    st.set_page_config(page_title='לוּחַ הַכֶּפֶל שֶׁל שָׁקֵד בֶּן עֶזְרָא',page_icon='🌱',layout='wide')
-    st.markdown('''<style>
-    .stApp,[data-testid="stAppViewContainer"]{background:#f7f5ee}
-    [data-testid="stMainBlockContainer"],.block-container{max-width:1100px;padding:.5rem .25rem 1rem}
-    [data-testid="stHeader"]{display:none}
-    @media(max-width:600px){[data-testid="stMainBlockContainer"],.block-container{padding:.25rem 0 .5rem}}
-    </style>''',unsafe_allow_html=True)
+@st.cache_resource
+def frontend_directory(html):
+    directory=Path(tempfile.mkdtemp(prefix="shaked_personal_"))
+    (directory/"index.html").write_text(html,encoding="utf-8")
+    return str(directory)
 
-    def setting(key):
-        if os.environ.get(key): return os.environ[key]
-        try: return st.secrets.get(key)
-        except (FileNotFoundError,KeyError): return None
-
-    database_url=setting('SHAKED_DATABASE_URL')
-    # Local development is opt-in. A cloud deployment never silently falls back
-    # to an ephemeral SQLite file and pretends that pupils' data is durable.
-    dev_path=os.environ.get('SHAKED_DEV_DB') if not database_url else None
-
-    @st.cache_resource
-    def service_for(url,local_path):
-        db=Database(url=url,dev_path=local_path)
-        db.initialize()
-        return Classroom(db)
-
-    service=None
-    if database_url or dev_path:
-        try: service=service_for(database_url,dev_path)
-        except Exception as exc:
-            logging.getLogger('shaked').warning('Database initialization failed: %s',type(exc).__name__)
-            st.error('לא ניתן להתחבר לשמירה המשותפת כרגע. בעל האתר יכול לבדוק את הגדרת החיבור ולנסות שוב.')
-    else:
-        with st.expander('הגדרה חד־פעמית לבעל האתר — הפעלת המשחק הכיתתי',expanded=False):
-            st.write('כדי להפעיל כניסת שחקנים ודירוג משותף, יש לחבר מסד PostgreSQL קבוע. '
-                     'מוסיפים ב־Settings → Secrets של האפליקציה את SHAKED_DATABASE_URL עם מחרוזת החיבור. '
-                     'הוראות מלאות נמצאות בחבילה המצורפת. אין להכניס סיסמאות לקוד או למאגר GitHub.')
-    if dev_path: st.caption('מצב בדיקה מקומי — אינו השמירה המשותפת של האתר הציבורי.')
-
-    @st.cache_resource
-    def frontend_directory(html):
-        directory=Path(tempfile.mkdtemp(prefix='shaked_classroom_'))
-        (directory/'index.html').write_text(html,encoding='utf-8')
-        return str(directory)
-
-    widget=components.declare_component('shaked_multiplication',path=frontend_directory(APP_HTML))
-    request=widget(configured=service is not None,snapshot=st.session_state.get('public_snapshot'),
-                   response=st.session_state.get('classroom_response'),key='shaked_classroom_v4',default=None)
-    if not isinstance(request,dict): return
-    request_id=request.get('id')
-    if request_id==st.session_state.get('handled_request_id'): return
-    st.session_state.handled_request_id=request_id
-    response={'id':request_id,'ok':False}
-    try:
-        if not service: raise UserError('הַכְּנִיסָה הַכִּתָּתִית עֲדַיִן אֵינָהּ זְמִינָה.')
-        if not isinstance(request_id,str) or not re.fullmatch('[A-Za-z0-9_-]{8,100}',request_id):
-            raise UserError('נִרְעֲנֵן אֶת הַדַּף וְנַמְשִׁיךְ.')
-        action=request.get('action');payload=request.get('payload',{})
-        if not isinstance(payload,dict): raise UserError('פְּעֻלָּה לֹא תַּקִּינָה.')
-        if action in ('register','login'):
-            pid=service.authenticate(action,payload)
-            st.session_state.player_id=pid
-            response.update(ok=True,snapshot=service.snapshot(pid))
-        elif action=='logout':
-            st.session_state.pop('player_id',None)
-            response.update(ok=True,snapshot=None)
-        else:
-            pid=st.session_state.get('player_id')
-            if not pid: raise UserError('קֹדֶם נִכָּנֵס עִם הַשֵּׁם וְהַקּוֹד.')
-            response.update(service.perform(pid,action,payload,request_id),ok=True)
-    except UserError as exc:
-        response['error']=str(exc)
-        # A stale question from a second device must refresh to the authoritative
-        # state, while rejected actions must never change attempts or grades.
-        pid=st.session_state.get('player_id')
-        if pid and service:
-            try: response['snapshot']=service.snapshot(pid)
-            except Exception: pass
-    except Exception as exc:
-        logging.getLogger('shaked').warning('Classroom action failed: %s',type(exc).__name__)
-        response['error']='לֹא הִצְלַחְנוּ לְעַדְכֵּן כָּעֵת. נְרַעֲנֵן אֶת הַמַּצָּב לִפְנֵי שֶׁנַּמְשִׁיךְ.'
-    if 'snapshot' in response: st.session_state.public_snapshot=response['snapshot']
-    st.session_state.classroom_response=response
-    st.rerun()
-
-
-if __name__=='__main__':
-    run_streamlit()
+# Stable component name retains browser storage between reloads and deployments.
+widget=components.declare_component("shaked_multiplication",path=frontend_directory(APP_HTML))
+widget(key="shaked_personal_v5",default=None)
