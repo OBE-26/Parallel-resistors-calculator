@@ -673,11 +673,31 @@ APP_HTML = r'''<!doctype html>
         max-width: 600px;
         margin: auto;
       }
+      .maze-layout > div {
+        min-width: 0;
+      }
+      .maze-viewport {
+        height: var(--maze-view-height, 320px);
+        overflow: auto;
+        direction: ltr;
+        border-radius: 18px;
+        background: #c8dbc2;
+        overscroll-behavior: contain;
+        overflow-anchor: none;
+        scrollbar-width: none;
+        touch-action: pan-x pan-y;
+      }
+      .maze-viewport::-webkit-scrollbar {
+        display: none;
+      }
       .maze-board {
         display: grid;
         grid-template-columns: repeat(var(--maze-size, 11), minmax(0, 1fr));
+        grid-template-rows: repeat(var(--maze-size, 11), minmax(0, 1fr));
         gap: 2px;
-        aspect-ratio: 1;
+        width: var(--maze-board-side, 386px);
+        height: var(--maze-board-side, 386px);
+        margin: auto;
         direction: ltr;
         background: #c8dbc2;
         border: 7px solid #c8dbc2;
@@ -688,9 +708,10 @@ APP_HTML = r'''<!doctype html>
         display: grid;
         place-items: center;
         position: relative;
-        aspect-ratio: 1;
         min-width: 0;
-        font-size: clamp(11px, calc(360px / var(--maze-size, 11)), 28px);
+        min-height: 0;
+        line-height: 1;
+        font-size: clamp(22px, calc(var(--maze-cell-size, 32px) * .72), 34px);
         background: #efe4ba;
         border-radius: 4px;
       }
@@ -701,7 +722,7 @@ APP_HTML = r'''<!doctype html>
       .maze-cell.wall:after {
         content: "♠";
         color: #c3d9b0;
-        font-size: clamp(10px, calc(320px / var(--maze-size, 11)), 26px);
+        font-size: clamp(20px, calc(var(--maze-cell-size, 32px) * .65), 30px);
       }
       .maze-cell.visited:not(.wall):not(.player):not(.goal):after {
         content: "·";
@@ -766,6 +787,19 @@ APP_HTML = r'''<!doctype html>
         color: #94a595;
         font-size: 24px;
       }
+      .maze-panel.maze-compact .maze-layout {
+        grid-template-columns: minmax(0, 1fr) 204px;
+        gap: 12px;
+      }
+      .maze-panel.maze-compact .controls-panel {
+        display: block;
+        padding: 10px;
+      }
+      .maze-panel.maze-compact .dpad {
+        grid-template: repeat(3, 44px) / repeat(3, 44px);
+        gap: 6px;
+        margin: 8px 0;
+      }
       .maze-overlay {
         position: absolute;
         inset: 0;
@@ -781,6 +815,9 @@ APP_HTML = r'''<!doctype html>
       .question-box {
         width: 100%;
         max-width: 370px;
+        max-height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
         border-radius: 18px;
         background: #fffefa;
         padding: 20px;
@@ -943,9 +980,27 @@ APP_HTML = r'''<!doctype html>
         }
         .controls-panel {
           padding: 14px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 8px;
+          align-items: center;
         }
         .dpad {
-          margin: 8px 0;
+          grid-column: 2;
+          grid-row: 1 / 4;
+          grid-template: repeat(3, 44px) / repeat(3, 44px);
+          gap: 6px;
+          margin: 0;
+        }
+        .controls-panel > strong,
+        .controls-panel > .status,
+        .controls-panel > .btn {
+          grid-column: 1;
+          min-width: 0;
+        }
+        .controls-panel > .btn {
+          font-size: 14px;
+          padding: 8px;
         }
         .controls-panel > p {
           margin-bottom: 8px;
@@ -1088,10 +1143,6 @@ APP_HTML = r'''<!doctype html>
         }
         .maze-panel {
           padding: 9px;
-        }
-        .maze-board {
-          border-width: 5px;
-          gap: 2px;
         }
         .maze-overlay {
           padding: 9px;
@@ -1383,12 +1434,16 @@ APP_HTML = r'''<!doctype html>
           <div class="maze-layout">
             <div>
               <div class="maze-arena" id="maze-arena">
+                <div class="maze-viewport" id="maze-viewport" tabindex="0"
+                  role="region" aria-label="חלון המבוך — התצוגה עוקבת אחרי השחקן"
+                  aria-describedby="maze-camera-note">
                 <div
                   class="maze-board"
                   id="maze-board"
                   role="img"
                   aria-label="מַפַּת הַמָּבוֹךְ"
                 ></div>
+                </div>
                 <div
                   class="maze-overlay"
                   id="maze-question"
@@ -1422,7 +1477,9 @@ APP_HTML = r'''<!doctype html>
                   <div class="question-box end-box" id="maze-end-content" role="status"></div>
                 </div>
               </div>
-              <div class="maze-caption" id="maze-caption"></div><div id="maze-recovery-note" class="status warning" role="status" hidden></div>
+              <div class="maze-caption" id="maze-caption"></div>
+              <div class="maze-caption" id="maze-camera-note">התצוגה עוקבת אחריך. אפשר לגלול במבוך כדי להציץ בדרך.</div>
+              <div id="maze-recovery-note" class="status warning" role="status" hidden></div>
             </div>
             <div class="controls-panel">
               <strong>לְאָן מִתְקַדְּמִים?</strong>
@@ -2000,6 +2057,7 @@ function navigate(next) {
   status("global-status", "");
   renderAll();
   $("app").scrollIntoView({ block: "start", behavior: "instant" });
+  if (page === "maze") queueMazeViewport(true);
   resizeFrame();
 }
 document
@@ -2305,6 +2363,95 @@ for (const activity of ["quick", "words"]) {
   });
 }
 
+// The component iframe grows with its content, so its own innerHeight is NOT
+// the screen height. Use the host viewport to avoid a resize feedback loop.
+function mazeScreenHeight() {
+  try {
+    const host = window.parent;
+    return host.visualViewport?.height || host.innerHeight;
+  } catch {
+    // Cross-origin embeds cannot expose the host viewport. Keep a conservative,
+    // bounded window without depending on the auto-growing iframe height.
+    return Math.min(720, (window.screen.availHeight || 800) * .75);
+  }
+}
+let mazeLayoutQueued = false, mazeRevealQueued = false, mazeCameraRun = null, mazeEntryPending = false;
+let mazeWindowWidth = window.innerWidth, mazeWindowHeight = mazeScreenHeight();
+function resizeMazeScreen() {
+  const width = window.innerWidth, height = mazeScreenHeight();
+  const changed = width !== mazeWindowWidth || Math.abs(height - mazeWindowHeight) > 1;
+  mazeWindowWidth = width; mazeWindowHeight = height;
+  queueMazeViewport(changed);
+}
+function revealMazeControl(control) {
+  const box = control?.closest?.(".question-box");
+  if (!box || !control.getClientRects().length) return;
+  const bounds = box.getBoundingClientRect(), field = control.getBoundingClientRect();
+  if (field.bottom > bounds.bottom - 8) box.scrollTop += field.bottom - bounds.bottom + 8;
+  else if (field.top < bounds.top + 8) box.scrollTop += field.top - bounds.top - 8;
+}
+$("maze-arena").addEventListener("focusin", event => revealMazeControl(event.target));
+function queueMazeViewport(reveal = false) {
+  mazeRevealQueued ||= reveal;
+  if (mazeLayoutQueued) return;
+  mazeLayoutQueued = true;
+  requestAnimationFrame(() => {
+    mazeLayoutQueued = false;
+    const revealPanel = mazeRevealQueued;
+    mazeRevealQueued = false;
+    const m = snapshot?.runs.maze;
+    if (page !== "maze" || !m) return;
+    const viewport = $("maze-viewport"), board = $("maze-board");
+    const panel = $("maze-panel"), layout = panel.querySelector(".maze-layout");
+    panel.classList.toggle("maze-compact", mazeScreenHeight() < 540 && window.innerWidth >= 560);
+    const column = $("maze-arena").parentElement;
+    const controls = panel.querySelector(".controls-panel");
+    const before = viewport.getBoundingClientRect();
+    const above = before.top - panel.getBoundingClientRect().top;
+    const below = column.getBoundingClientRect().bottom - before.bottom;
+    const stacked = getComputedStyle(layout).gridTemplateColumns.split(" ").length === 1;
+    const controlsHeight = stacked ? controls.getBoundingClientRect().height + parseFloat(getComputedStyle(layout).rowGap) : 0;
+    const padding = parseFloat(getComputedStyle(panel).paddingBottom);
+    const availableHeight = mazeScreenHeight() - above - below - controlsHeight - padding - 24;
+    const height = Math.floor(Math.max(160, Math.min(600, viewport.clientWidth, availableHeight)));
+    const side = Math.ceil(Math.max(Math.min(viewport.clientWidth, height), m.size * 32 + (m.size - 1) * 2 + 14));
+    viewport.style.setProperty("--maze-view-height", height + "px");
+    board.style.setProperty("--maze-board-side", side + "px");
+    board.style.setProperty("--maze-cell-size", ((side - 14 - (m.size - 1) * 2) / m.size) + "px");
+
+    // Measure the actual cell, including board centering/borders; LTR on this
+    // scroll container keeps horizontal tracking consistent inside the RTL app.
+    const player = board.querySelector(".player");
+    if (player) {
+      const view = viewport.getBoundingClientRect(), cell = player.getBoundingClientRect();
+      viewport.scrollTo({
+        left: Math.max(0, Math.min(viewport.scrollWidth - viewport.clientWidth,
+          viewport.scrollLeft + cell.left + cell.width / 2 - view.left - viewport.clientWidth / 2)),
+        top: Math.max(0, Math.min(viewport.scrollHeight - viewport.clientHeight,
+          viewport.scrollTop + cell.top + cell.height / 2 - view.top - viewport.clientHeight / 2)),
+        behavior: "instant",
+      });
+    }
+    mazeEntryPending ||= revealPanel || mazeCameraRun !== m.id;
+    if (mazeEntryPending) {
+      // Only level entry/restart scrolls the page. Ordinary moves pan the maze.
+      panel.scrollIntoView({ block: "start", behavior: "instant" });
+      if (!m.pending && m.status === "active" && !document.querySelector("dialog[open]"))
+        viewport.focus({ preventScroll: true });
+      // Streamlit applies setFrameHeight asynchronously. Repeat the entry
+      // alignment when the iframe grows, rather than leaving play below screen.
+      try {
+        mazeEntryPending = !!window.frameElement &&
+          Math.abs(window.frameElement.clientHeight - (Math.ceil($("app").getBoundingClientRect().height) + 4)) > 1;
+      } catch { mazeEntryPending = false; }
+    }
+    mazeCameraRun = m.id;
+    // Keep the focused answer/button visible when an on-screen keyboard or
+    // a short landscape screen makes the question box internally scrollable.
+    revealMazeControl(document.activeElement);
+    resizeFrame();
+  });
+}
 function renderMaze() {
   levels("maze", "levels");
   const m = snapshot.runs.maze;
@@ -2322,11 +2469,17 @@ function renderMaze() {
   $("maze-progress-fill").style.width = Math.min(100, (m.completed / progressTotal) * 100) + "%";
   const board = $("maze-board");
   board.style.setProperty("--maze-size", m.size);
-  board.replaceChildren();
+  // Keep cells mounted while moving; replacing the scroll content on every
+  // keypress can reset the browser's scroll position and cause visible jumps.
+  if (board.dataset.runId !== m.id) {
+    board.replaceChildren(...Array.from({ length: m.size * m.size }, () => document.createElement("div")));
+    board.dataset.runId = m.id;
+  }
   for (let y = 0; y < m.size; y++)
     for (let x = 0; x < m.size; x++) {
-      const cell = document.createElement("div");
+      const cell = board.children[y * m.size + x];
       cell.className = "maze-cell";
+      cell.textContent = "";
       cell.dataset.x = x;
       cell.dataset.y = y;
       if (m.grid[y][x]) cell.classList.add("wall");
@@ -2339,7 +2492,6 @@ function renderMaze() {
         cell.classList.add("player");
         cell.textContent = "🧒";
       }
-      board.append(cell);
     }
   board.setAttribute("aria-label", `מַפַּת הַמָּבוֹךְ. שׁוּרָה ${m.y}, עַמּוּדָה ${m.x}.`);
   $("maze-caption").innerHTML =
@@ -2357,6 +2509,7 @@ function renderMaze() {
   $("maze-restart").textContent = restartConfirm
     ? "לְהַתְחִיל מֵחָדָשׁ? לְחִיצָה נוֹסֶפֶת לְאִשּׁוּר"
     : "הַתְחָלַת הָרָמָה מֵחָדָשׁ ↻";
+  queueMazeViewport();
   if (m.pending) {
     const q = m.question;
     $("maze-question-title").textContent = m.revealed
@@ -2378,7 +2531,8 @@ function renderMaze() {
     );
     if (!lastMazePending && page === "maze") {
       requestAnimationFrame(() => {
-        $("maze-question").scrollIntoView({ block: "center", behavior: "instant" });
+        if (page !== "maze" || !snapshot.runs.maze?.pending) return;
+        $("maze-question").scrollIntoView({ block: "nearest", behavior: "instant" });
         $(m.revealed ? "maze-continue" : "maze-answer").focus({ preventScroll: true });
       });
     }
@@ -2622,6 +2776,21 @@ window.addEventListener("pagehide", () => { if (dirty) flushTable().catch(() => 
 message("streamlit:componentReady", { apiVersion: 1 });
 if ("ResizeObserver" in window) new ResizeObserver(resizeFrame).observe($("app"));
 window.addEventListener("resize", resizeFrame);
+window.addEventListener("resize", resizeMazeScreen);
+window.visualViewport?.addEventListener("resize", resizeMazeScreen);
+if ("ResizeObserver" in window) {
+  const mazeObserver = new ResizeObserver(() => queueMazeViewport());
+  mazeObserver.observe($("maze-arena"));
+  mazeObserver.observe($("maze-panel").querySelector(".controls-panel"));
+}
+try {
+  if (window.parent !== window) {
+    window.parent.addEventListener("resize", resizeMazeScreen);
+    window.parent.visualViewport?.addEventListener("resize", resizeMazeScreen);
+    if ("ResizeObserver" in window && window.frameElement)
+      new ResizeObserver(() => queueMazeViewport()).observe(window.frameElement);
+  }
+} catch { /* Cross-origin hosts use the bounded fallback above. */ }
 resizeFrame();
 
 </script>
