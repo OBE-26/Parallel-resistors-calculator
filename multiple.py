@@ -882,50 +882,6 @@ APP_HTML = r'''<!doctype html>
         width: 100%;
         margin-top: 6px;
       }
-      .dragon-stage {
-        position: relative;
-        height: 76px;
-        overflow: hidden;
-        direction: ltr;
-      }
-      .dragon-stage .dragon {
-        position: absolute;
-        left: 5%;
-        top: 0;
-        font-size: 57px;
-        animation: dragon-catch 1.5s ease-out both;
-      }
-      .dragon-stage .kid {
-        position: absolute;
-        left: 70%;
-        top: 17px;
-        font-size: 37px;
-        animation: kid-away 1.5s ease-out both;
-      }
-      @keyframes dragon-catch {
-        0% {
-          left: -30%;
-        }
-        65% {
-          left: 55%;
-          transform: scale(1.1);
-        }
-        100% {
-          left: 110%;
-          transform: translateY(-20px);
-        }
-      }
-      @keyframes kid-away {
-        0%,
-        55% {
-          opacity: 1;
-          transform: none;
-        }
-        100% {
-          opacity: 0;
-          transform: translate(150px, -45px) scale(0.5);
-        }
-      }
       .fireworks {
         position: fixed;
         inset: 0;
@@ -1247,15 +1203,6 @@ APP_HTML = r'''<!doctype html>
         .end-box h3 {
           font-size: 18px;
         }
-        .dragon-stage {
-          height: 60px;
-        }
-        .dragon-stage .dragon {
-          font-size: 44px;
-        }
-        .dragon-stage .kid {
-          font-size: 28px;
-        }
         .answer-line {
           gap: 7px;
         }
@@ -1292,12 +1239,7 @@ APP_HTML = r'''<!doctype html>
         .spark {
           display: none;
         }
-        .dragon-stage .dragon {
-          left: 45%;
-        }
-        .dragon-stage .kid {
-          left: 72%;
-        }
+
       }
 
 
@@ -1353,6 +1295,45 @@ APP_HTML = r'''<!doctype html>
       .learning-bar{margin:16px 0}.learning-bar>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:7px}.learning-track{height:12px;background:#e1e8dc;border-radius:12px;overflow:hidden;direction:ltr}.learning-track>div{height:100%;background:var(--green);border-radius:12px}
       .session-chart{display:flex;gap:8px;align-items:flex-end;justify-content:center;min-height:180px;direction:ltr}.session-bar{flex:1;min-width:0;max-width:48px;text-align:center;font-size:12px}.session-column{height:115px;display:flex;align-items:flex-end;background:#e3eade;border-radius:7px;margin:6px 0}.session-column>div{width:100%;background:var(--violet);border-radius:7px}.learning-tips{background:#fff1d1;border-radius:15px;padding:16px;margin-top:20px}.learning-tips h3{font-size:18px;margin-bottom:8px}.learning-tips ul{margin:0;padding-right:22px;line-height:1.8}.learning-tips li+li{margin-top:9px}.progress-details{margin-top:16px}.progress-details summary{cursor:pointer;font-weight:bold;padding:10px 0}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
       @media(max-width:480px){dialog{padding:15px}.player-toolbar{padding:10px}.player-actions{width:100%}.player-actions .btn{flex:1;padding:8px;font-size:12px}.progress-summary{gap:6px}.progress-summary>div{padding:10px 4px}.progress-summary bdi{font-size:22px}.progress-table th,.progress-table td{padding:9px 6px;font-size:12px}}
+      .activity:nth-child(5) .activity-icon { background: #ebe1fa; color: #654795; }
+      .dragon-toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+      .dragon-badge { background:#eee5fb; color:#533776; padding:10px 15px; border-radius:30px; font-weight:700; }
+      .dragon-game { padding:18px; }
+      #dragon-start { text-align:center; padding:30px 12px; line-height:1.9; }
+      #dragon-start .btn { margin-top:18px; }
+      .dragon-track { height:8px; background:#e9e0f5; border-radius:8px; overflow:hidden; direction:ltr; margin-bottom:12px; }
+      #dragon-meter { height:100%; width:0; background:#8660bc; transition:width .3s; }
+      .dragon-viewport { position:relative; height:280px; overflow:hidden; border:2px solid #becfc9; border-radius:18px; background:linear-gradient(#d8edfa,#f3faf5 75%); direction:ltr; isolation:isolate; }
+      .dragon-sky { position:absolute; inset:0; pointer-events:none; }
+      .dragon-sky span { position:absolute; left:12%; top:10px; font-size:65px; color:white; opacity:.9; }
+      .dragon-sky span:nth-child(2) { left:60%; top:28px; font-size:42px; }
+      .dragon-sky i { position:absolute; width:280px; height:180px; border-radius:50% 50% 0 0; background:#bbd9c5; top:155px; left:22%; box-shadow:230px 20px #cee2c7,-240px 45px #cee2c7; }
+      .dragon-world { position:absolute; top:0; left:0; width:2860px; height:280px; will-change:transform; }
+      .dragon-ground { position:absolute; top:236px; left:0; right:0; height:44px; border-top:8px solid #69a875; background:repeating-linear-gradient(120deg,#bda687 0 20px,#c7b598 20px 40px); }
+      .dragon-platform { position:absolute; width:104px; height:17px; border-radius:8px; background:#997452; border-top:6px solid #77b775; box-shadow:0 4px 0 #6a634b22; }
+      .dragon-runner { position:absolute; width:30px; height:42px; top:0; left:0; font-size:36px; line-height:42px; text-align:center; filter:drop-shadow(0 3px 1px #355b4133); }
+      .dragon-runner svg { width:100%; height:100%; display:block; }
+      .dragon-orb { position:absolute; width:36px; height:36px; border-radius:50%; background:#ffdd79; color:#6d4c24; border:3px solid #fff9d4; box-shadow:0 0 0 5px #fff4c85c,0 4px 12px #b1884144; font:bold 26px/28px sans-serif; text-align:center; }
+      .dragon-boss { position:absolute; right:8px; top:52px; width:112px; height:98px; transform-origin:center; pointer-events:none; filter:drop-shadow(0 5px 2px #55467926); }
+      .dragon-boss svg { width:100%; height:100%; }
+      .dragon-boss.struck { animation:dragon-hit .28s ease-out; }
+      .dragon-boss.fleeing { animation:dragon-flee 1.05s ease-in forwards; }
+      @keyframes dragon-hit { 40% { transform:translateX(12px) rotate(8deg); filter:brightness(1.4); } }
+      @keyframes dragon-flee { to { transform:translate(250px,-200px) rotate(15deg) scale(.55); opacity:0; } }
+      .dragon-spell { position:absolute; left:0; top:0; font-size:31px; color:#ffdf61; text-shadow:0 0 8px #d29618; pointer-events:none; }
+      .dragon-scene-label { position:absolute; top:9px; left:10px; max-width:calc(100% - 20px); background:#ffffffe8; border-radius:12px; padding:5px 10px; color:#416353; font-size:12px; direction:rtl; }
+      .dragon-controls { display:flex; direction:ltr; justify-content:center; gap:12px; margin-top:14px; }
+      .dragon-controls button { touch-action:none; user-select:none; -webkit-user-select:none; min-width:60px; min-height:50px; font-size:23px; }
+      .dragon-controls button:last-child { direction:rtl; font-size:17px; min-width:110px; }
+      #dragon-instructions { margin-top:12px; text-align:center; line-height:1.7; }
+      .dragon-shortcut { display:block; margin:8px auto 0; min-height:36px; }
+      .dragon-question { margin:15px auto 0; padding:18px; border:1px solid #d6c5ea; border-radius:16px; background:#f7f1ff; max-width:500px; }
+      .dragon-question label { font-weight:700; }
+      .dragon-question .math { margin:8px 0; font-size:32px; }
+      .dragon-hint { padding-top:12px; line-height:1.8; color:#533776; }
+      #dragon-status { text-align:center; }
+      body.a11y-contrast .dragon-viewport { border-color:#071d16; }
+      @media(max-width:480px) { .dragon-game { padding:10px; } .dragon-controls { gap:8px; } .dragon-question { padding:12px; } .dragon-question .answer-line { flex-wrap:wrap; } .dragon-question .answer-line input { flex:1; min-width:80px; } }
     </style>
   </head>
   <body>
@@ -1375,6 +1356,7 @@ APP_HTML = r'''<!doctype html>
           <button data-page="quick">תִּרְגּוּל מָהִיר</button>
           <button data-page="words">שְׁאֵלוֹת מִלּוּלִיּוֹת</button>
           <button data-page="maze">הַמָּבוֹךְ</button>
+          <button data-page="dragon">אתגר הדרקון</button>
         </nav>
 
       </header>
@@ -1398,7 +1380,7 @@ APP_HTML = r'''<!doctype html>
         </div>
         <div class="section-kicker">
           <h2>בְּמָה נִרְצֶה לְשַׂחֵק הַיּוֹם?</h2>
-          <span>אַרְבַּע דְּרָכִים לְתַרְגֵּל</span>
+          <span>חמש דרכים לתרגל</span>
         </div>
         <div class="activities">
           <article class="activity">
@@ -1453,6 +1435,7 @@ APP_HTML = r'''<!doctype html>
               לַהַרְפַּתְקָה <span aria-hidden="true">←</span>
             </button>
           </article>
+          <article class="activity"><div class="activity-top"><span class="activity-icon" aria-hidden="true">🐉</span><h3>אתגר הדרקון</h3></div><p>קופצים, פותרים ושולחים כדורי קסם. אחרי עשר תשובות נכונות הדרקון בורח!</p><button class="btn" data-page="dragon">אל הדרקון <span aria-hidden="true">←</span></button></article>
         </div>
       </section>
 <section id="page-table" class="page" hidden aria-labelledby="table-title">
@@ -1617,6 +1600,38 @@ APP_HTML = r'''<!doctype html>
         </p>
       </section>
 
+      <section class="page" id="page-dragon" hidden aria-labelledby="dragon-title">
+        <div class="page-heading"><span class="tag">עשרה תרגילים. הרפתקה אחת.</span><h2 id="dragon-title">אתגר הדרקון 🐉</h2><p id="dragon-intro"></p></div>
+        <div class="dragon-toolbar"><span class="dragon-badge">כדורי קסם <bdi id="dragon-hits">0 / 10</bdi> ✨</span><button class="btn secondary" id="dragon-restart" hidden>איפוס האתגר ↻</button></div>
+        <div class="panel dragon-game">
+          <div id="dragon-start"><p>בדרך מחכים עשרה תרגילי כפל. כל פתרון נכון שולח כדור קסם, ובפגיעה העשירית הדרקון בורח!</p><button class="btn" id="dragon-play">יוצאים להרפתקה ←</button></div>
+          <div id="dragon-playfield" hidden>
+            <div class="dragon-track" aria-label="התקדמות באתגר"><div id="dragon-meter" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" aria-label="פגיעות בדרקון"></div></div>
+            <div id="dragon-viewport" class="dragon-viewport" tabindex="0" role="group" aria-label="מסלול אתגר הדרקון" aria-describedby="dragon-instructions">
+              <div class="dragon-sky" aria-hidden="true"><span>☁</span><span>☁</span><i></i></div>
+              <div id="dragon-world" class="dragon-world" aria-hidden="true"><div class="dragon-ground"></div><div id="dragon-platforms"></div><div id="dragon-orb" class="dragon-orb">×</div><div id="dragon-runner" class="dragon-runner"></div></div>
+              <div id="dragon-boss" class="dragon-boss" aria-hidden="true">
+                <svg viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg"><path d="M79 80Q121 8 150 28L132 55 152 78 107 87" fill="#9675de" stroke="#543987" stroke-width="4"/><path d="M90 100Q140 140 152 98Q156 149 110 125L77 115" fill="#7560b1" stroke="#543987" stroke-width="4"/><ellipse cx="88" cy="99" rx="34" ry="29" fill="#8c70cb" stroke="#543987" stroke-width="4"/><ellipse cx="78" cy="105" rx="17" ry="21" fill="#f8d89b"/><path d="M62 42L55 16 78 32M97 34L116 14 111 46" fill="#ffd87a" stroke="#543987" stroke-width="4"/><path d="M57 43Q71 25 98 34Q122 39 112 67L112 77Q99 100 66 88L39 80Q28 71 39 59L55 57Z" fill="#9d82df" stroke="#543987" stroke-width="4"/><ellipse cx="68" cy="52" rx="9" ry="12" fill="white"/><ellipse cx="96" cy="50" rx="9" ry="12" fill="white"/><circle cx="65" cy="54" r="4" fill="#302849"/><circle cx="93" cy="52" r="4" fill="#302849"/><circle cx="43" cy="68" r="3" fill="#543987"/><path d="M47 79Q63 85 76 76" fill="none" stroke="#543987" stroke-width="3" stroke-linecap="round"/><path d="M63 119L50 130H72M100 119L94 131H118" fill="#8c70cb" stroke="#543987" stroke-width="5" stroke-linejoin="round"/><circle cx="101" cy="70" r="7" fill="#efb4cd" opacity=".8"/></svg>
+              </div>
+              <div id="dragon-spell" class="dragon-spell" aria-hidden="true" hidden>✦</div>
+              <span class="dragon-scene-label" id="dragon-scene-label">אל התרגיל הראשון ✨</span>
+            </div>
+            <div class="dragon-controls" role="group" aria-label="שליטה בדמות">
+              <button class="btn secondary" data-dragon-control="left" aria-label="שמאלה">←</button><button class="btn secondary" data-dragon-control="right" aria-label="ימינה">→</button><button class="btn" data-dragon-control="jump" aria-label="קפיצה">קפיצה ↑</button>
+            </div>
+            <p class="subtle" id="dragon-instructions">חיצים ימינה ושמאלה לתנועה · רווח או חץ למעלה לקפיצה. בטלפון משתמשים בכפתורים.</p>
+            <button class="text-link dragon-shortcut" id="dragon-accessible-next">אל התרגיל הבא בלי קפיצה</button>
+            <form id="dragon-form" class="dragon-question" hidden novalidate>
+              <label for="dragon-answer" id="dragon-question-label"></label><div class="math" id="dragon-exercise"></div>
+              <div class="answer-line"><input id="dragon-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" type="submit" id="dragon-submit">שליחת קסם ✨</button></div>
+              <p id="dragon-hint" class="dragon-hint" hidden></p>
+            </form>
+            <div id="dragon-status" class="status" role="status" aria-live="polite"></div>
+            <div id="dragon-result" class="result-card" hidden><h3 id="dragon-result-title"></h3><p>עשרה פתרונות נכונים, עשרה כדורי קסם — הדרקון ברח!</p><div class="actions"><button class="btn" id="dragon-trophy">הגביע שלי 🏆</button><button class="btn secondary" id="dragon-again">הרפתקה נוספת ↻</button></div></div>
+          </div>
+        </div>
+      </section>
+
       <dialog id="confirm-dialog" class="small-dialog" aria-labelledby="confirm-title"><h2 id="confirm-title">מתחילים מחדש?</h2><p id="confirm-text"></p><div class="actions"><button class="btn" id="confirm-yes">כן, להמשיך</button><button class="btn secondary" id="confirm-no">להישאר בסבב</button></div></dialog>
       <dialog id="players-dialog" class="small-dialog" aria-labelledby="players-title">
         <div class="dialog-top"><h2 id="players-title">מי משחק היום?</h2><button class="dialog-close" id="players-close" aria-label="סגירה">×</button></div>
@@ -1627,7 +1642,7 @@ APP_HTML = r'''<!doctype html>
             <label><input type="radio" name="selected-player-gender" value="boy" required><span>👦 בן</span></label>
             <label><input type="radio" name="selected-player-gender" value="girl" required><span>👧 בת</span></label>
           </fieldset>
-          <button class="btn secondary" type="submit">שמירה והמשך עם השם שבחרתי</button>
+          <button class="btn" type="submit" style="background:#0066ff;color:#fff;">המשך עם שחקן קיים</button>
         </form>
         <form id="player-create-form" class="player-form">
           <label for="new-player-name">שם חדש</label><input id="new-player-name" type="text" maxlength="40" placeholder="איך קוראים לך?" autocomplete="off" required>
@@ -1639,7 +1654,7 @@ APP_HTML = r'''<!doctype html>
         </form>
         <p id="player-error" class="status error" role="status"></p>
       </dialog>
-      <dialog id="progress-dialog" aria-labelledby="progress-title"><div class="dialog-top"><h2 id="progress-title">ההתקדמות של <span id="progress-player"></span></h2><button class="dialog-close" id="progress-close" aria-label="סגירה">×</button></div><p class="subtle">כל תשובה עצמאית עד הניסיון השלישי שווה 10 נקודות. פתרון שהוצג לא מוסיף נקודות. בלוח הכפל נספר כל תא שנפתר פעם אחת בסבב.</p><div class="progress-summary"><div><bdi id="progress-total-points">0</bdi><span>נקודות מצטברות</span></div><div><bdi id="progress-total-correct">0 / 0</bdi><span>נכון מתוך שאלות</span></div><div><bdi id="progress-total-rate">—</bdi><span>הצלחה עצמאית</span></div></div><p id="progress-empty" class="status">ההתקדמות תופיע כאן אחרי פתרון השאלות הראשונות.</p><div class="view-switch" aria-label="תצוגת התקדמות"><button class="btn secondary" data-progress-view="table" aria-pressed="true">טבלה</button><button class="btn secondary" data-progress-view="chart" aria-pressed="false">גרף</button></div><div id="progress-table-view"><div class="progress-scroll"><table class="progress-table"><caption>התקדמות לפי פעילות</caption><thead><tr><th scope="col">פעילות</th><th scope="col">שאלות</th><th scope="col">נכון</th><th scope="col">נקודות</th><th scope="col">הצלחה</th></tr></thead><tbody id="progress-activities"></tbody></table></div></div><div id="progress-chart-view" hidden><h3>אחוז תשובות עצמאיות לפי פעילות</h3><div id="progress-bars"></div><h3>עד עשרת הסבבים האחרונים</h3><p class="subtle">הגובה מציג את אחוז התשובות העצמאיות. הסבב האחרון מימין; גם סבבים שנעצרו ב־RESET נכללים.</p><div class="session-chart" id="progress-sessions" role="group" aria-label="אחוזי הצלחה בסבבים האחרונים"></div></div><details class="progress-details"><summary>התרגילים שפתרתי</summary><div class="progress-scroll"><table class="progress-table"><thead><tr><th scope="col">תרגיל</th><th scope="col">שאלות</th><th scope="col">נכון</th><th scope="col">עם פתרון מוצג</th></tr></thead><tbody id="progress-facts"></tbody></table></div></details><details class="progress-details"><summary>היסטוריית סבבים</summary><p class="subtle">הטבלה מציגה עד 12 סבבים אחרונים. הניקוד המצטבר כולל גם סבבים קודמים ושאלות מהסבב הפעיל.</p><div class="progress-scroll"><table class="progress-table"><thead><tr><th scope="col">תאריך</th><th scope="col">פעילות</th><th scope="col">נכון / שאלות</th><th scope="col">נקודות</th><th scope="col">סבב</th></tr></thead><tbody id="progress-history"></tbody></table></div></details><div class="learning-tips"><h3>מה כדאי לחזק?</h3><ul id="learning-advice"></ul></div></dialog>
+      <dialog id="progress-dialog" aria-labelledby="progress-title"><div class="dialog-top"><h2 id="progress-title">ההתקדמות של <span id="progress-player"></span></h2><button class="dialog-close" id="progress-close" aria-label="סגירה">×</button></div><p class="subtle">כל תשובה עצמאית עד הניסיון השלישי שווה 10 נקודות. פתרון שהוצג לא מוסיף נקודות. בלוח הכפל נספר כל תא שנפתר פעם אחת בסבב. באתגר הדרקון אין הגבלת ניסיונות: כל תרגיל שנפתר שווה 10 נקודות ונמנה פעם אחת.</p><div class="progress-summary"><div><bdi id="progress-total-points">0</bdi><span>נקודות מצטברות</span></div><div><bdi id="progress-total-correct">0 / 0</bdi><span>נכון מתוך שאלות</span></div><div><bdi id="progress-total-rate">—</bdi><span>הצלחה עצמאית</span></div></div><p id="progress-empty" class="status">ההתקדמות תופיע כאן אחרי פתרון השאלות הראשונות.</p><div class="view-switch" aria-label="תצוגת התקדמות"><button class="btn secondary" data-progress-view="table" aria-pressed="true">טבלה</button><button class="btn secondary" data-progress-view="chart" aria-pressed="false">גרף</button></div><div id="progress-table-view"><div class="progress-scroll"><table class="progress-table"><caption>התקדמות לפי פעילות</caption><thead><tr><th scope="col">פעילות</th><th scope="col">שאלות</th><th scope="col">נכון</th><th scope="col">נקודות</th><th scope="col">הצלחה</th></tr></thead><tbody id="progress-activities"></tbody></table></div></div><div id="progress-chart-view" hidden><h3>אחוז תשובות עצמאיות לפי פעילות</h3><div id="progress-bars"></div><h3>עד עשרת הסבבים האחרונים</h3><p class="subtle">הגובה מציג את אחוז התשובות העצמאיות. הסבב האחרון מימין; גם סבבים שנעצרו ב־RESET נכללים.</p><div class="session-chart" id="progress-sessions" role="group" aria-label="אחוזי הצלחה בסבבים האחרונים"></div></div><details class="progress-details"><summary>התרגילים שפתרתי</summary><div class="progress-scroll"><table class="progress-table"><thead><tr><th scope="col">תרגיל</th><th scope="col">שאלות</th><th scope="col">נכון</th><th scope="col">עם פתרון מוצג</th></tr></thead><tbody id="progress-facts"></tbody></table></div></details><details class="progress-details"><summary>היסטוריית סבבים</summary><p class="subtle">הטבלה מציגה עד 12 סבבים אחרונים. הניקוד המצטבר כולל גם סבבים קודמים ושאלות מהסבב הפעיל.</p><div class="progress-scroll"><table class="progress-table"><thead><tr><th scope="col">תאריך</th><th scope="col">פעילות</th><th scope="col">נכון / שאלות</th><th scope="col">נקודות</th><th scope="col">סבב</th></tr></thead><tbody id="progress-history"></tbody></table></div></details><div class="learning-tips"><h3>מה כדאי לחזק?</h3><ul id="learning-advice"></ul></div></dialog>
 <footer class="footer"><div>נבנה באהבה לשקד בן עזרא מאבא.</div>
       <button class="text-link" id="terms-open" type="button">כניסה לתנאי שימוש</button>
       <button class="text-link" type="button" data-open-accessibility>נגישות</button></footer>
@@ -1737,10 +1752,39 @@ APP_HTML = r'''<!doctype html>
 const WORD_BANK = [{"id":"w001","level":0,"text":"יֵשׁ 2 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 2 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w002","level":0,"text":"יֵשׁ 2 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 5 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w003","level":0,"text":"יֵשׁ 3 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 4 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w004","level":0,"text":"יֵשׁ 4 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 3 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w005","level":0,"text":"יֵשׁ 5 שַׂקִּיּוֹת. בְּכָל שַׂקִּית 2 תַּפּוּחִים. כַּמָּה תַּפּוּחִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w006","level":0,"text":"עַל הַשֻּׁלְחָן 3 צַלָּחוֹת. בְּכָל צַלַּחַת 5 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w007","level":0,"text":"עַל הַשֻּׁלְחָן 4 צַלָּחוֹת. בְּכָל צַלַּחַת 4 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w008","level":0,"text":"עַל הַשֻּׁלְחָן 5 צַלָּחוֹת. בְּכָל צַלַּחַת 3 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w009","level":0,"text":"עַל הַשֻּׁלְחָן 2 צַלָּחוֹת. בְּכָל צַלַּחַת 2 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w010","level":0,"text":"עַל הַשֻּׁלְחָן 2 צַלָּחוֹת. בְּכָל צַלַּחַת 5 עוּגִיּוֹת. כַּמָּה עוּגִיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w011","level":0,"text":"בַּגִּנָּה 5 שׁוּרוֹת. בְּכָל שׁוּרָה 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":5,"b":4},{"id":"w012","level":0,"text":"בַּגִּנָּה 2 שׁוּרוֹת. בְּכָל שׁוּרָה 3 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":2,"b":3},{"id":"w013","level":0,"text":"בַּגִּנָּה 3 שׁוּרוֹת. בְּכָל שׁוּרָה 2 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":3,"b":2},{"id":"w014","level":0,"text":"בַּגִּנָּה 3 שׁוּרוֹת. בְּכָל שׁוּרָה 5 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":3,"b":5},{"id":"w015","level":0,"text":"בַּגִּנָּה 4 שׁוּרוֹת. בְּכָל שׁוּרָה 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בַּגִּנָּה?","a":4,"b":4},{"id":"w016","level":0,"text":"יֵשׁ 3 קֻפְסָאוֹת. בְּכָל קֻפְסָה 3 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":3},{"id":"w017","level":0,"text":"יֵשׁ 4 קֻפְסָאוֹת. בְּכָל קֻפְסָה 2 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":2},{"id":"w018","level":0,"text":"יֵשׁ 4 קֻפְסָאוֹת. בְּכָל קֻפְסָה 5 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":5},{"id":"w019","level":0,"text":"יֵשׁ 5 קֻפְסָאוֹת. בְּכָל קֻפְסָה 4 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":4},{"id":"w020","level":0,"text":"יֵשׁ 2 קֻפְסָאוֹת. בְּכָל קֻפְסָה 3 עֶפְרוֹנוֹת. כַּמָּה עֶפְרוֹנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":3},{"id":"w021","level":0,"text":"יֵשׁ 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 2 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":5,"b":2},{"id":"w022","level":0,"text":"יֵשׁ 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 5 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":5,"b":5},{"id":"w023","level":0,"text":"יֵשׁ 2 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 4 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":2,"b":4},{"id":"w024","level":0,"text":"יֵשׁ 3 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 3 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":3,"b":3},{"id":"w025","level":0,"text":"יֵשׁ 4 יְלָדִים. כָּל יֶלֶד מְקַבֵּל 2 בָּלוֹנִים. כַּמָּה בָּלוֹנִים צָרִיךְ לְכֻלָּם?","a":4,"b":2},{"id":"w026","level":0,"text":"בַּסַּל 2 חֲבִילוֹת. בְּכָל חֲבִילָה 5 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":2,"b":5},{"id":"w027","level":0,"text":"בַּסַּל 3 חֲבִילוֹת. בְּכָל חֲבִילָה 4 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":3,"b":4},{"id":"w028","level":0,"text":"בַּסַּל 4 חֲבִילוֹת. בְּכָל חֲבִילָה 3 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":4,"b":3},{"id":"w029","level":0,"text":"בַּסַּל 5 חֲבִילוֹת. בְּכָל חֲבִילָה 2 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":5,"b":2},{"id":"w030","level":0,"text":"בַּסַּל 5 חֲבִילוֹת. בְּכָל חֲבִילָה 5 לַחְמָנִיּוֹת. כַּמָּה לַחְמָנִיּוֹת יֵשׁ בַּסַּל?","a":5,"b":5},{"id":"w031","level":0,"text":"יֵשׁ 4 דַּפִּים. עַל כָּל דַּף 4 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w032","level":0,"text":"יֵשׁ 5 דַּפִּים. עַל כָּל דַּף 3 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w033","level":0,"text":"יֵשׁ 2 דַּפִּים. עַל כָּל דַּף 2 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w034","level":0,"text":"יֵשׁ 2 דַּפִּים. עַל כָּל דַּף 5 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":5},{"id":"w035","level":0,"text":"יֵשׁ 3 דַּפִּים. עַל כָּל דַּף 4 מַדְבֵּקוֹת. כַּמָּה מַדְבֵּקוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w036","level":0,"text":"יֵשׁ 2 סַלִּים. בְּכָל סַל 3 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":2,"b":3},{"id":"w037","level":0,"text":"יֵשׁ 3 סַלִּים. בְּכָל סַל 2 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":3,"b":2},{"id":"w038","level":0,"text":"יֵשׁ 3 סַלִּים. בְּכָל סַל 5 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":3,"b":5},{"id":"w039","level":0,"text":"יֵשׁ 4 סַלִּים. בְּכָל סַל 4 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":4,"b":4},{"id":"w040","level":0,"text":"יֵשׁ 5 סַלִּים. בְּכָל סַל 3 כַּדּוּרִים. כַּמָּה כַּדּוּרִים יֵשׁ בְּכָל הַסַּלִּים יַחַד?","a":5,"b":3},{"id":"w041","level":0,"text":"בַּסִּפְרִיָּה 4 מַדָּפִים. עַל כָּל מַדָּף 2 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":4,"b":2},{"id":"w042","level":0,"text":"בַּסִּפְרִיָּה 4 מַדָּפִים. עַל כָּל מַדָּף 5 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":4,"b":5},{"id":"w043","level":0,"text":"בַּסִּפְרִיָּה 5 מַדָּפִים. עַל כָּל מַדָּף 4 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":5,"b":4},{"id":"w044","level":0,"text":"בַּסִּפְרִיָּה 2 מַדָּפִים. עַל כָּל מַדָּף 3 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":3},{"id":"w045","level":0,"text":"בַּסִּפְרִיָּה 3 מַדָּפִים. עַל כָּל מַדָּף 2 סְפָרִים. כַּמָּה סְפָרִים יֵשׁ עַל הַמַּדָּפִים?","a":3,"b":2},{"id":"w046","level":0,"text":"בַּיַּעַר 5 עֵצִים. עַל כָּל עֵץ 5 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":5,"b":5},{"id":"w047","level":0,"text":"בַּיַּעַר 2 עֵצִים. עַל כָּל עֵץ 4 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":2,"b":4},{"id":"w048","level":0,"text":"בַּיַּעַר 3 עֵצִים. עַל כָּל עֵץ 3 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":3,"b":3},{"id":"w049","level":0,"text":"בַּיַּעַר 4 עֵצִים. עַל כָּל עֵץ 2 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":4,"b":2},{"id":"w050","level":0,"text":"בַּיַּעַר 4 עֵצִים. עַל כָּל עֵץ 5 צִפּוֹרִים. כַּמָּה צִפּוֹרִים יֵשׁ עַל הָעֵצִים?","a":4,"b":5},{"id":"w051","level":0,"text":"יֵשׁ 3 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 4 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w052","level":0,"text":"יֵשׁ 4 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 3 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w053","level":0,"text":"יֵשׁ 5 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 2 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w054","level":0,"text":"יֵשׁ 5 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 5 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w055","level":0,"text":"יֵשׁ 2 שֻׁלְחָנוֹת. לְיַד כָּל שֻׁלְחָן 4 כִּסְאוֹת. כַּמָּה כִּסְאוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w056","level":0,"text":"יֵשׁ 5 צְמִידִים. בְּכָל צָמִיד 3 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":5,"b":3},{"id":"w057","level":0,"text":"יֵשׁ 2 צְמִידִים. בְּכָל צָמִיד 2 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":2,"b":2},{"id":"w058","level":0,"text":"יֵשׁ 2 צְמִידִים. בְּכָל צָמִיד 5 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":2,"b":5},{"id":"w059","level":0,"text":"יֵשׁ 3 צְמִידִים. בְּכָל צָמִיד 4 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":3,"b":4},{"id":"w060","level":0,"text":"יֵשׁ 4 צְמִידִים. בְּכָל צָמִיד 3 חָרוּזִים. כַּמָּה חָרוּזִים יֵשׁ בְּכָל הַצְּמִידִים?","a":4,"b":3},{"id":"w061","level":0,"text":"יֵשׁ 3 קַרְטוֹנִים. בְּכָל קַרְטוֹן 2 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":2},{"id":"w062","level":0,"text":"יֵשׁ 3 קַרְטוֹנִים. בְּכָל קַרְטוֹן 5 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w063","level":0,"text":"יֵשׁ 4 קַרְטוֹנִים. בְּכָל קַרְטוֹן 4 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":4},{"id":"w064","level":0,"text":"יֵשׁ 5 קַרְטוֹנִים. בְּכָל קַרְטוֹן 3 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":3},{"id":"w065","level":0,"text":"יֵשׁ 2 קַרְטוֹנִים. בְּכָל קַרְטוֹן 2 בַּקְבּוּקִים. כַּמָּה בַּקְבּוּקִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":2},{"id":"w066","level":0,"text":"בַּמִּשְׂחָק 4 מִגְדָּלִים. בְּכָל מִגְדָּל 5 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":5},{"id":"w067","level":0,"text":"בַּמִּשְׂחָק 5 מִגְדָּלִים. בְּכָל מִגְדָּל 4 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":4},{"id":"w068","level":0,"text":"בַּמִּשְׂחָק 2 מִגְדָּלִים. בְּכָל מִגְדָּל 3 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":3},{"id":"w069","level":0,"text":"בַּמִּשְׂחָק 3 מִגְדָּלִים. בְּכָל מִגְדָּל 2 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":2},{"id":"w070","level":0,"text":"בַּמִּשְׂחָק 3 מִגְדָּלִים. בְּכָל מִגְדָּל 5 קֻבִּיּוֹת. כַּמָּה קֻבִּיּוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":5},{"id":"w071","level":0,"text":"יֵשׁ 2 זֵרִים. בְּכָל זֵר 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":2,"b":4},{"id":"w072","level":0,"text":"יֵשׁ 3 זֵרִים. בְּכָל זֵר 3 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":3,"b":3},{"id":"w073","level":0,"text":"יֵשׁ 4 זֵרִים. בְּכָל זֵר 2 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":4,"b":2},{"id":"w074","level":0,"text":"יֵשׁ 4 זֵרִים. בְּכָל זֵר 5 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":4,"b":5},{"id":"w075","level":0,"text":"יֵשׁ 5 זֵרִים. בְּכָל זֵר 4 פְּרָחִים. כַּמָּה פְּרָחִים יֵשׁ בְּכָל הַזֵּרִים?","a":5,"b":4},{"id":"w076","level":0,"text":"יֵשׁ 4 אֲרִיזוֹת. בְּכָל אֲרִיזָה 3 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":4,"b":3},{"id":"w077","level":0,"text":"יֵשׁ 5 אֲרִיזוֹת. בְּכָל אֲרִיזָה 2 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w078","level":0,"text":"יֵשׁ 5 אֲרִיזוֹת. בְּכָל אֲרִיזָה 5 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w079","level":0,"text":"יֵשׁ 2 אֲרִיזוֹת. בְּכָל אֲרִיזָה 4 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w080","level":0,"text":"יֵשׁ 3 אֲרִיזוֹת. בְּכָל אֲרִיזָה 3 קְלָפִים. כַּמָּה קְלָפִים יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":3},{"id":"w081","level":1,"text":"לַהַצָּגָה הֵכִינוּ 5 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 6 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":5,"b":6},{"id":"w082","level":1,"text":"לַהַצָּגָה הֵכִינוּ 5 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 9 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":5,"b":9},{"id":"w083","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 3 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":3},{"id":"w084","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 6 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":6},{"id":"w085","level":1,"text":"לַהַצָּגָה הֵכִינוּ 6 שׁוּרוֹת שֶׁל כִּסְאוֹת, וּבְכָל שׁוּרָה 9 כִּסְאוֹת. כַּמָּה אֲנָשִׁים יוּכְלוּ לָשֶׁבֶת?","a":6,"b":9},{"id":"w086","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־4 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":4},{"id":"w087","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־7 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":7},{"id":"w088","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־10 תְּמוּנוֹת. מִלְּאוּ 6 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":6,"b":10},{"id":"w089","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־4 תְּמוּנוֹת. מִלְּאוּ 7 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":7,"b":4},{"id":"w090","level":1,"text":"בְּכָל עַמּוּד בָּאַלְבּוֹם יֵשׁ מָקוֹם לְ־7 תְּמוּנוֹת. מִלְּאוּ 7 עַמּוּדִים. כַּמָּה תְּמוּנוֹת הִכְנִיסוּ?","a":7,"b":7},{"id":"w091","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 2 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":2},{"id":"w092","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 5 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":5},{"id":"w093","level":1,"text":"בְּמֶשֶׁךְ 7 יָמִים קָרְאוּ בְּכָל יוֹם 8 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":7,"b":8},{"id":"w094","level":1,"text":"בְּמֶשֶׁךְ 8 יָמִים קָרְאוּ בְּכָל יוֹם 2 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":8,"b":2},{"id":"w095","level":1,"text":"בְּמֶשֶׁךְ 8 יָמִים קָרְאוּ בְּכָל יוֹם 5 עַמּוּדִים. כַּמָּה עַמּוּדִים קָרְאוּ בְּכָל הַיָּמִים יַחַד?","a":8,"b":5},{"id":"w096","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 9 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 7 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":7,"b":9},{"id":"w097","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 3 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":3},{"id":"w098","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 6 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":6},{"id":"w099","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 9 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 8 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":8,"b":9},{"id":"w100","level":1,"text":"לְכָל קְבוּצָה מְחַלְּקִים 3 כַּרְטִיסִים. בַּכִּתָּה יֵשׁ 9 קְבוּצוֹת. כַּמָּה כַּרְטִיסִים צָרִיךְ לְחַלֵּק?","a":9,"b":3},{"id":"w101","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 8 מַגָּשִׁים. עַל כָּל מַגָּשׁ 7 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":8,"b":7},{"id":"w102","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 8 מַגָּשִׁים. עַל כָּל מַגָּשׁ 10 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":8,"b":10},{"id":"w103","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 4 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":4},{"id":"w104","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 7 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":7},{"id":"w105","level":1,"text":"בַּמַּאֲפִיָּה אוֹפִים 9 מַגָּשִׁים. עַל כָּל מַגָּשׁ 10 מַאֲפִים. כַּמָּה מַאֲפִים אוֹפִים בְּסַךְ הַכֹּל?","a":9,"b":10},{"id":"w106","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 5 דַּפִּים. בַּחֻג 9 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":9,"b":5},{"id":"w107","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 8 דַּפִּים. בַּחֻג 9 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":9,"b":8},{"id":"w108","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 2 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":2},{"id":"w109","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 5 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":5},{"id":"w110","level":1,"text":"לְכָל מִשְׁתַּתֵּף בַּחֻג נוֹתְנִים 8 דַּפִּים. בַּחֻג 10 מִשְׁתַּתְּפִים. כַּמָּה דַּפִּים צָרִיךְ לְהָכִין?","a":10,"b":8},{"id":"w111","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 3 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":3},{"id":"w112","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 6 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":6},{"id":"w113","level":1,"text":"בַּחֲנוּת יֵשׁ 10 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 9 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":10,"b":9},{"id":"w114","level":1,"text":"בַּחֲנוּת יֵשׁ 2 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 3 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":3},{"id":"w115","level":1,"text":"בַּחֲנוּת יֵשׁ 2 מַדָּפִים שֶׁל צַעֲצוּעִים. עַל כָּל מַדָּף 6 צַעֲצוּעִים. כַּמָּה צַעֲצוּעִים יֵשׁ עַל הַמַּדָּפִים?","a":2,"b":6},{"id":"w116","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 10 תַּחֲנוֹת. בָּנוּ 10 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":10,"b":10},{"id":"w117","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 4 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":4},{"id":"w118","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 7 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":7},{"id":"w119","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 10 תַּחֲנוֹת. בָּנוּ 2 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":2,"b":10},{"id":"w120","level":1,"text":"בְּכָל מַסְלוּל בַּמִּשְׂחָק יֵשׁ 4 תַּחֲנוֹת. בָּנוּ 3 מַסְלוּלִים נִפְרָדִים. כַּמָּה תַּחֲנוֹת יֵשׁ בְּסַךְ הַכֹּל?","a":3,"b":4},{"id":"w121","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 8 מִכְחוֹלִים. הֵבִיאוּ 2 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":2,"b":8},{"id":"w122","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 2 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":2},{"id":"w123","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 5 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":5},{"id":"w124","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 8 מִכְחוֹלִים. הֵבִיאוּ 3 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":3,"b":8},{"id":"w125","level":1,"text":"בְּכָל קֻפְסַת יְצִירָה יֵשׁ 2 מִכְחוֹלִים. הֵבִיאוּ 4 קֻפְסָאוֹת לַכִּתָּה. כַּמָּה מִכְחוֹלִים הֵבִיאוּ?","a":4,"b":2},{"id":"w126","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 6 מַפִּיּוֹת. בָּאוּלָם 3 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":3,"b":6},{"id":"w127","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 9 מַפִּיּוֹת. בָּאוּלָם 3 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":3,"b":9},{"id":"w128","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 3 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":3},{"id":"w129","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 6 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":6},{"id":"w130","level":1,"text":"לְכָל שֻׁלְחָן מְכִינִים 9 מַפִּיּוֹת. בָּאוּלָם 4 שֻׁלְחָנוֹת. כַּמָּה מַפִּיּוֹת יֵשׁ לְהָכִין?","a":4,"b":9},{"id":"w131","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 4 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":4},{"id":"w132","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 7 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":7},{"id":"w133","level":1,"text":"הַגַּנָּן שָׁתַל 4 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 10 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":4,"b":10},{"id":"w134","level":1,"text":"הַגַּנָּן שָׁתַל 5 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 4 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":5,"b":4},{"id":"w135","level":1,"text":"הַגַּנָּן שָׁתַל 5 שׁוּרוֹת שֶׁל שְׁתִילִים. בְּכָל שׁוּרָה 7 שְׁתִילִים. כַּמָּה שְׁתִילִים שָׁתַל?","a":5,"b":7},{"id":"w136","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 2 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":2},{"id":"w137","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 5 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":5},{"id":"w138","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 8 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 5 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":5,"b":8},{"id":"w139","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 2 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 6 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":6,"b":2},{"id":"w140","level":1,"text":"בְּכָל תֵּבָה יֵשׁ 5 אוֹצָרוֹת. בַּמִּשְׂחָק מָצְאוּ 6 תֵּבוֹת. כַּמָּה אוֹצָרוֹת מָצְאוּ בְּסַךְ הַכֹּל?","a":6,"b":5},{"id":"w141","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־7 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 10 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":10,"b":7},{"id":"w142","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־10 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 10 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":10,"b":10},{"id":"w143","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־5 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 6 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":6,"b":5},{"id":"w144","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־8 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 6 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":6,"b":8},{"id":"w145","level":2,"text":"לְקִשּׁוּט הַכִּתָּה מְכִינִים שַׁרְשְׁרוֹת זֵהוֹת. כָּל שַׁרְשֶׁרֶת מֻרְכֶּבֶת מִ־3 טַבָּעוֹת נְיָר. רוֹצִים לִתְלוֹת 7 שַׁרְשְׁרוֹת. כַּמָּה טַבָּעוֹת צָרִיךְ לְהָכִין?","a":7,"b":3},{"id":"w146","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־6 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־6 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":6,"b":6},{"id":"w147","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־9 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־6 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":6,"b":9},{"id":"w148","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־4 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":4},{"id":"w149","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־7 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":7},{"id":"w150","level":2,"text":"בְּמִשְׂחַק הָאוֹצָר כָּל הַצְלָחָה מְזַכָּה בְּ־10 נְקֻדּוֹת. שָׁקֵד הִצְלִיחָה בְּ־7 מְשִׂימוֹת, וְלֹא קִבְּלָה נְקֻדּוֹת נוֹסָפוֹת. כַּמָּה נְקֻדּוֹת צָבְרָה?","a":7,"b":10},{"id":"w151","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 5 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 7 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":7,"b":5},{"id":"w152","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 8 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 7 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":7,"b":8},{"id":"w153","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 3 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":3},{"id":"w154","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 6 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":6},{"id":"w155","level":2,"text":"מוֹכְרִים כַּרְטִיסִים בַּחֲבִילוֹת שֶׁל 9 כַּרְטִיסִים. הַמּוֹרָה קָנְתָה 8 חֲבִילוֹת שְׁלֵמוֹת. לְכַמָּה יְלָדִים יֵשׁ כַּרְטִיס, אִם כָּל יֶלֶד מְקַבֵּל אֶחָד?","a":8,"b":9},{"id":"w156","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 4 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":4},{"id":"w157","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 7 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":7},{"id":"w158","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 10 חֲלָקִים. הַכִּתָּה בּוֹנָה 8 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":8,"b":10},{"id":"w159","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 5 חֲלָקִים. הַכִּתָּה בּוֹנָה 9 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":9,"b":5},{"id":"w160","level":2,"text":"לְהַכָּנַת דֶּגֶם אֶחָד צָרִיךְ 8 חֲלָקִים. הַכִּתָּה בּוֹנָה 9 דְּגָמִים זֵהִים, בְּלִי לְשַׁתֵּף חֲלָקִים בֵּינֵיהֶם. כַּמָּה חֲלָקִים צָרִיךְ בְּסַךְ הַכֹּל?","a":9,"b":8},{"id":"w161","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 3 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":3},{"id":"w162","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 6 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":6},{"id":"w163","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 9 שׁוּרוֹת, וּבְכָל שׁוּרָה 9 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":9,"b":9},{"id":"w164","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 10 שׁוּרוֹת, וּבְכָל שׁוּרָה 4 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":10,"b":4},{"id":"w165","level":2,"text":"בְּלֻחַ הַתְּמוּנוֹת יֵשׁ 10 שׁוּרוֹת, וּבְכָל שׁוּרָה 7 מְקוֹמוֹת. מַדְבִּיקִים תְּמוּנָה אַחַת בְּכָל מָקוֹם וּמְמַלְּאִים אֶת הַלּוּחַ. כַּמָּה תְּמוּנוֹת צָרִיךְ?","a":10,"b":7},{"id":"w166","level":2,"text":"בְּתַחֲרוּת יֵשׁ 9 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 10 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":9,"b":10},{"id":"w167","level":2,"text":"בְּתַחֲרוּת יֵשׁ 10 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 5 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":10,"b":5},{"id":"w168","level":2,"text":"בְּתַחֲרוּת יֵשׁ 10 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 8 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":10,"b":8},{"id":"w169","level":2,"text":"בְּתַחֲרוּת יֵשׁ 6 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 3 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":6,"b":3},{"id":"w170","level":2,"text":"בְּתַחֲרוּת יֵשׁ 6 קְבוּצוֹת שָׁווֹת בְּגָדְלָן. בְּכָל קְבוּצָה 6 יְלָדִים. כָּל יֶלֶד מְקַבֵּל מְדַלְיָה אַחַת. כַּמָּה מְדַלְיוֹת צָרִיךְ לְכָל הַיְּלָדִים?","a":6,"b":6},{"id":"w171","level":2,"text":"מְסַדְּרִים 10 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 9. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":10,"b":9},{"id":"w172","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 4. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":4},{"id":"w173","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 7. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":7},{"id":"w174","level":2,"text":"מְסַדְּרִים 6 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 10. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":6,"b":10},{"id":"w175","level":2,"text":"מְסַדְּרִים 7 קֻפְסָאוֹת מַתָּנָה. בְּכָל קֻפְסָה אוֹתוֹ מִסְפַּר מַדְבֵּקוֹת: 5. כַּמָּה מַדְבֵּקוֹת יֵשׁ לְהוֹצִיא מֵהַמְּגֵרָה כְּדֵי לְמַלֵּא אֶת כָּל הַקֻּפְסָאוֹת?","a":7,"b":5},{"id":"w176","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 8 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 6 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":6,"b":8},{"id":"w177","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 3 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":3},{"id":"w178","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 6 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":6},{"id":"w179","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 9 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 7 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":7,"b":9},{"id":"w180","level":2,"text":"בְּכָל יוֹם שָׁקֵד פּוֹתֶרֶת 4 תַּרְגִּילִים. הִיא הִתְמִידָה בְּכָךְ בְּמֶשֶׁךְ 8 יָמִים בְּדִיּוּק. כַּמָּה תַּרְגִּילִים פָּתְרָה בִּתְקוּפָה זוֹ?","a":8,"b":4},{"id":"w181","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 7 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 7 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":7,"b":7},{"id":"w182","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 10 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 7 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":7,"b":10},{"id":"w183","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 5 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 8 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":8,"b":5},{"id":"w184","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 8 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 8 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":8,"b":8},{"id":"w185","level":2,"text":"לְכָל תַּחֲנַת יְצִירָה מַקְצִיבִים 3 צְבָעִים. בַּחֲצַר פּוֹעֲלוֹת 9 תַּחֲנוֹת, וְהַצְּבָעִים נִשְׁאָרִים בְּכָל תַּחֲנָה. כַּמָּה צְבָעִים צָרִיךְ לְהָבִיא לַחֲצַר?","a":9,"b":3},{"id":"w186","level":2,"text":"בְּסֵפֶר יֵשׁ 8 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 6 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":8,"b":6},{"id":"w187","level":2,"text":"בְּסֵפֶר יֵשׁ 8 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 9 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":8,"b":9},{"id":"w188","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 4 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":4},{"id":"w189","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 7 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":7},{"id":"w190","level":2,"text":"בְּסֵפֶר יֵשׁ 9 פְּרָקִים בְּאוֹתוֹ אֹרֶךְ. כָּל פֶּרֶק מֵכִיל 10 עַמּוּדִים. כַּמָּה עַמּוּדִים יֵשׁ בְּכָל הַפְּרָקִים יַחַד, בְּלִי לִסְפֹּר אֶת הַכְּרִיכָה?","a":9,"b":10},{"id":"w191","level":2,"text":"רוֹצִים לְמַלֵּא 9 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־5 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":9,"b":5},{"id":"w192","level":2,"text":"רוֹצִים לְמַלֵּא 9 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־8 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":9,"b":8},{"id":"w193","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־3 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":3},{"id":"w194","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־6 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":6},{"id":"w195","level":2,"text":"רוֹצִים לְמַלֵּא 10 מַגָּשִׁים. בְּכָל מַגָּשׁ יֵשׁ מָקוֹם לְ־9 מַאֲפִים. כָּל הַמַּגָּשִׁים צְרִיכִים לִהְיוֹת מְלֵאִים. כַּמָּה מַאֲפִים צָרִיךְ לֶאֱפוֹת?","a":10,"b":9},{"id":"w196","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 4 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":4},{"id":"w197","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 7 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":7},{"id":"w198","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 10 אֲבָנִים. מְשַׂחֲקִים 10 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":10,"b":10},{"id":"w199","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 5 אֲבָנִים. מְשַׂחֲקִים 6 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":6,"b":5},{"id":"w200","level":2,"text":"בְּכָל סַבָּב שֶׁל הַמִּשְׂחָק אוֹסְפִים 8 אֲבָנִים. מְשַׂחֲקִים 6 סְבָבִים וְשׁוֹמְרִים אֶת כָּל הָאֲבָנִים שֶׁנֶּאֶסְפוּ. כַּמָּה אֲבָנִים יִהְיוּ בַּסּוֹף?","a":6,"b":8}];
 "use strict";
 
+// A small, deterministic platformer. Platforms are one-way; the floor has no pits.
+class DragonCourse {
+  static ground = 236;
+  static width = 2860;
+  static station(index) { return { x: 220 + index * 260, y: DragonCourse.ground - (index % 3 === 0 ? 0 : index % 3 === 1 ? 44 : 72) }; }
+  constructor(index = 0) { this.x = Math.max(24, DragonCourse.station(index).x - 125); this.y = DragonCourse.ground; this.vy = 0; this.grounded = true; }
+  step(dt, direction, jump) {
+    dt = Math.min(.032, Math.max(0, dt));
+    if (jump && this.grounded) { this.vy = -440; this.grounded = false; }
+    this.x = Math.max(16, Math.min(DragonCourse.width - 48, this.x + direction * 185 * dt));
+    const previous = this.y;
+    this.vy += 1050 * dt; this.y += this.vy * dt; this.grounded = false;
+    let floor = DragonCourse.ground;
+    for (let i = 0; i < 10; i++) {
+      const s = DragonCourse.station(i);
+      if (s.y < floor && this.x + 28 > s.x - 52 && this.x < s.x + 52 && previous <= s.y + .5 && this.y >= s.y && this.vy >= 0) floor = s.y;
+    }
+    if (this.y >= floor) { this.y = floor; this.vy = 0; this.grounded = true; }
+  }
+  reaches(index) {
+    const s = DragonCourse.station(index);
+    return Math.abs(this.x + 15 - s.x) < 31 && Math.abs(this.y - 22 - (s.y - 24)) < 35;
+  }
+}
+
 // Browser-only profiles. Scores are recorded once per question, independently of runs.
 class PersonalGame {
   static storageKey = "shaked.multiplication.personal.v6";
-  static activities = ["table", "quick", "words", "maze"];
+  static activities = ["table", "quick", "words", "maze", "dragon"];
+  static activityComplete(run) {
+    return run?.status === "passed" && (run.activity === "table" ? run.completed === 100
+      : run.activity === "dragon" ? run.hits === 10 : run.level === 2);
+  }
 
   constructor(bank, storage, sessionToken = "default") {
     this.bank = bank;
@@ -1772,12 +1816,12 @@ class PersonalGame {
   id() { return globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + Math.random().toString(36).slice(2); }
   emptyStats() { return { answered: 0, correct: 0, points: 0, first: 0, second: 0, third: 0, assisted: 0 }; }
   fresh() {
-    return { runs: { table: null, quick: null, words: null, maze: null },
+    return { runs: { table: null, quick: null, words: null, maze: null, dragon: null },
       unlocked: { quick: 0, words: 0, maze: 0 }, sessionToken: null,
       stats: Object.fromEntries(PersonalGame.activities.map(a => [a, this.emptyStats()])),
       facts: {}, history: [], lastDecks: {},
       completedActivities: Object.fromEntries(PersonalGame.activities.map(a => [a, false])),
-      journeyCelebrated: false };
+      journeyCelebrated: false, legacyJourneyAward: false };
   }
   restore(saved) {
     const state = this.fresh();
@@ -1786,7 +1830,7 @@ class PersonalGame {
       if (Number.isInteger(saved.unlocked?.[a]) && saved.unlocked[a] >= 0 && saved.unlocked[a] <= 2)
         state.unlocked[a] = saved.unlocked[a];
     for (const a of PersonalGame.activities) {
-      if (this.validRun(saved.runs?.[a], a) && (a === "table" || saved.runs[a].level <= state.unlocked[a]))
+      if (this.validRun(saved.runs?.[a], a) && (["table", "dragon"].includes(a) || saved.runs[a].level <= state.unlocked[a]))
         state.runs[a] = saved.runs[a];
       for (const k of Object.keys(state.stats[a]))
         if (Number.isFinite(saved.stats?.[a]?.[k]) && saved.stats[a][k] >= 0)
@@ -1806,11 +1850,13 @@ class PersonalGame {
     // replaces current runs. Keep the flags independently of the history limit.
     for (const a of PersonalGame.activities) {
       const run = state.runs[a];
-      const completedRun = run?.status === "passed" && (a === "table" ? run.completed === 100 : run.level === 2);
+      const completedRun = PersonalGame.activityComplete(run);
       const completedHistory = state.history.some(h => h.activity === a && h.reason === "passed"
-        && (a === "table" ? h.completed === 100 && h.correct === 100 : h.level === 2));
+        && (a === "table" ? h.completed === 100 && h.correct === 100 : a === "dragon" ? h.completed === 10 && h.correct === 10 : h.level === 2));
       state.completedActivities[a] = saved.completedActivities?.[a] === true || completedRun || completedHistory;
     }
+    state.legacyJourneyAward = saved.legacyJourneyAward === true || (saved.completedActivities?.dragon === undefined
+      && saved.journeyCelebrated === true && ["table", "quick", "words", "maze"].every(a => state.completedActivities[a]));
     state.journeyCelebrated = saved.journeyCelebrated === true && PersonalGame.activities.every(a => state.completedActivities[a]);
     return state;
   }
@@ -1863,6 +1909,10 @@ class PersonalGame {
       !Number.isInteger(r.index) || r.index < 0 || r.index > r.questions.length ||
       !Number.isInteger(r.tries) || r.tries < 0 || r.tries > 3 ||
       typeof r.revealed !== "boolean" || typeof r.solved !== "boolean") return false;
+    if (activity === "dragon") return r.level === 0 && r.questions.length === 10 && r.total === 10 && r.index < 10
+      && Number.isInteger(r.hits) && r.hits >= 0 && r.hits <= 10 && r.completed === r.hits && r.correct === r.hits
+      && typeof r.pending === "boolean" && !r.revealed && r.hits === r.index + Number(r.solved)
+      && (!r.solved || r.pending) && (r.status === "passed" ? r.hits === 10 : r.status === "active" && r.hits < 10);
     if (activity !== "maze") return r.questions.length === 20 && r.index < 20 && r.total === 20;
     const size = [11, 13, 15][r.level];
     return typeof r.recovery === "boolean" && r.size === size &&
@@ -1909,7 +1959,7 @@ class PersonalGame {
       return [...new Map(this.bank.filter(q => q.level === level).map(q => [q.text, q])).values()];
     }
     const pool = [];
-    for (let a = [1, 2, 6][level]; a <= [5, 10, 10][level]; a++)
+    for (let a = activity === "dragon" ? 1 : [1, 2, 6][level]; a <= (activity === "dragon" ? 10 : [5, 10, 10][level]); a++)
       for (let b = 1; b <= 10; b++) pool.push({ a, b, text: null, id: `q${a}-${b}` });
     return pool;
   }
@@ -1926,10 +1976,11 @@ class PersonalGame {
       completed: 0, points: 0, score: null, logged: [], startedAt: new Date().toISOString() };
     if (activity === "table") return Object.assign(run, { total: 100, values: Array(100).fill(""),
       marks: Array(100).fill(""), first: Array(100).fill(null), cellTries: Array(100).fill(0), lastChecked: Array(100).fill(null) });
-    const total = activity === "maze" ? [10, 15, 20][level] : 20;
+    const total = activity === "dragon" ? 10 : activity === "maze" ? [10, 15, 20][level] : 20;
     Object.assign(run, { total, questions: this.deck(activity, level, total),
       index: 0, tries: 0, solved: false, revealed: false });
     if (activity === "maze") Object.assign(run, this.makeMaze(level), { recovery: false, steps: 0 });
+    if (activity === "dragon") Object.assign(run, { hits: 0, pending: false });
     return run;
   }
   farthest(grid) {
@@ -2025,9 +2076,9 @@ class PersonalGame {
     const denominator = run.activity === "maze" && run.recovery ? run.completed : run.total;
     run.score = denominator ? Math.round(run.correct / denominator * 10000) / 100 : 0;
     run.status = run.score >= 80 || (run.activity === "maze" && run.recovery) ? "passed" : "retry";
-    if (run.status === "passed" && run.activity !== "table")
+    if (run.status === "passed" && ["quick", "words", "maze"].includes(run.activity))
       this.state.unlocked[run.activity] = Math.max(this.state.unlocked[run.activity], Math.min(2, run.level + 1));
-    if (run.status === "passed" && (run.activity === "table" ? run.completed === 100 : run.level === 2))
+    if (PersonalGame.activityComplete(run))
       this.state.completedActivities[run.activity] = true;
     this.archive(run, run.status);
   }
@@ -2112,13 +2163,13 @@ class PersonalGame {
     if (action === "player") this.selectPlayer(payload);
     else if (action === "journey_seen") {
       if (!PersonalGame.activities.every(a => this.state.completedActivities[a]))
-        throw new Error("קודם משלימים את כל ארבע הפעילויות כדי לקבל את גביע המסע.");
+        throw new Error("קודם משלימים את כל חמש הפעילויות כדי לקבל את גביע המסע.");
       this.state.journeyCelebrated = true;
     }
     else if (action === "reset") this.reset();
     else if (action === "start") {
       const { activity, level } = payload;
-      if (!["quick", "words", "maze"].includes(activity) || !Number.isInteger(level) || level < 0 || level > this.state.unlocked[activity])
+      if (activity === "dragon" ? level !== 0 : !["quick", "words", "maze"].includes(activity) || !Number.isInteger(level) || level < 0 || level > this.state.unlocked[activity])
         throw new Error("קודם מסיימים את הרמה הקודמת כדי לפתוח את הבאה.");
       const old = this.state.runs[activity];
       if (old?.status === "active" && old.level === level) return { snapshot: this.snapshot(), celebrate: false };
@@ -2131,7 +2182,31 @@ class PersonalGame {
     } else if (action !== "sync") {
       const run = Object.values(this.state.runs).find(r => r?.id === payload.run_id);
       if (!run) throw new Error("הסבב התעדכן. נמשיך מהמסך הנוכחי.");
-      if (action === "maze_restart" && run.activity === "maze") {
+      if (run.activity === "dragon") {
+        if (action === "dragon_restart") {
+          this.archive(run, "reset"); this.state.runs.dragon = this.newRun("dragon", 0);
+        } else if (run.status === "active") {
+          if (action === "dragon_collect") {
+            run.pending = true;
+          } else if (action === "answer") {
+            const q = this.currentQuestion(run, payload);
+            if (!run.pending) throw new Error("קודם אוספים תרגיל במסלול.");
+            if (!run.solved) {
+              const answer = String(payload.answer ?? "").trim();
+              if (!/^[0-9]{1,3}$/.test(answer)) throw new Error("נקליד מספר שלם.");
+              if (Number(answer) === q.a * q.b) {
+                this.record(run, q, true, run.tries + 1);
+                run.completed++; run.hits++; run.solved = true;
+                if (run.hits === 10) this.finish(run);
+              } else run.tries = Math.min(3, run.tries + 1);
+            }
+          } else if (action === "dragon_next") {
+            this.currentQuestion(run, payload);
+            if (!run.solved) throw new Error("קודם פותרים את התרגיל.");
+            Object.assign(run, { index: run.index + 1, pending: false, solved: false, tries: 0 });
+          } else throw new Error("פעולה לא מתאימה למשחק.");
+        }
+      } else if (action === "maze_restart" && run.activity === "maze") {
         this.archive(run, "reset");
         this.state.runs.maze = run.recovery && run.status === "active" ? this.newRecovery(run) : this.newRun("maze", run.level);
       } else if (run.status === "active") {
@@ -2207,7 +2282,7 @@ function browserSession(win) {
   }
 }
 
-if (typeof module !== "undefined") module.exports = { PersonalGame, browserSession };
+if (typeof module !== "undefined") module.exports = { PersonalGame, browserSession, DragonCourse };
 
 
 "use strict";
@@ -2288,7 +2363,7 @@ function rpc(action, payload = {}) {
     const completedActivity = ["answer", "move", "maze_continue", "table_check"].includes(action)
       && PersonalGame.activities.find(activity => {
         const before = previousRuns[activity], after = snapshot.runs[activity];
-        return after?.status === "passed" && (activity === "table" ? after.completed === 100 : after.level === 2)
+        return activity !== "dragon" && PersonalGame.activityComplete(after)
           && !(before?.id === after.id && before.status === "passed");
       });
     if (completedActivity) celebrateCompletion(completedActivity);
@@ -2307,7 +2382,7 @@ window.addEventListener("message", event => {
 });
 function navigate(next) {
   if (!parentConsent) return;
-  if (!["home", "table", "quick", "words", "maze"].includes(next)) return;
+  if (!["home", "table", "quick", "words", "maze", "dragon"].includes(next)) return;
   if (next !== page) closeCompletionCelebration();
   if (page === "table" && next !== "table" && dirty) flushTable().catch(actionError);
   page = next;
@@ -2333,6 +2408,7 @@ function renderAll() {
   renderQuiz("quick");
   renderQuiz("words");
   renderMaze();
+  renderDragon();
   resizeFrame();
 }
 
@@ -2359,6 +2435,7 @@ function fireworks() {
 
 let completionCelebrationTimer = null, journeyTransitionTimer = null;
 function journeyComplete() { return PersonalGame.activities.every(a => snapshot.completedActivities[a]); }
+function journeyAvailable() { return journeyComplete() || snapshot.legacyJourneyAward; }
 function journeyPending() { return journeyComplete() && !snapshot.journeyCelebrated; }
 function maybeCelebrateJourney() {
   if (parentConsent && !snapshot.player.needsName && !snapshot.player.needsGender
@@ -2379,7 +2456,7 @@ function showCompletionTrophy() {
     ? genderText("אין עליך! עברת מסע מאתגר. אתה מקבל את הגביע על הדרך שעברת. היידד!",
       "אין עלייך! עברת מסע מאתגר. את מקבלת את הגביע על הדרך שעברת. היידד!")
     : "כל הכבוד על ההתמדה וההצלחה!";
-  if (journey) {
+  if (journey && journeyComplete()) {
     snapshot = game.perform("journey_seen").snapshot;
     storageNotice();
   } else if (journeyPending()) {
@@ -2414,7 +2491,7 @@ function closeCompletionCelebration() {
   if ($("completion-celebration").open) $("completion-celebration").close();
 }
 function celebrateCompletion(activity) {
-  if (activity === "journey" && !journeyComplete()) return;
+  if (activity === "journey" && !journeyAvailable()) return;
   closeCompletionCelebration();
   clearTimeout(fireworkTimer);
   $("fireworks").replaceChildren();
@@ -2426,9 +2503,9 @@ function celebrateCompletion(activity) {
   $("completion-celebration-done").textContent = "להמשיך";
   $("completion-champion").hidden = true;
   $("completion-champion").textContent = snapshot.player.name + genderText(" האלוף!", " האלופה!");
-  $("completion-score").textContent = activity === "journey" ? "4 / 4" : activity === "table" ? "100 / 100" : "3 / 3";
-  $("completion-celebration-title").textContent = activity === "journey" ? "כל המשחקים הושלמו!" : activity === "table" ? "כל 100 התשובות נכונות!" : "כל שלוש הרמות הושלמו!";
-  $("completion-celebration-message").textContent = activity === "journey" ? "לוח הכפל, התרגול המהיר, השאלות המילוליות והמבוך — המסע הושלם!" : "סיימת בהצלחה את " + ACTIVITY_NAMES[activity] + "!";
+  $("completion-score").textContent = activity === "journey" ? (journeyComplete() ? "5 / 5" : "4 / 4") : activity === "dragon" ? "10 / 10" : activity === "table" ? "100 / 100" : "3 / 3";
+  $("completion-celebration-title").textContent = activity === "journey" ? (journeyComplete() ? "כל המשחקים הושלמו!" : "הגביע מהמסע הקודם שלך!") : activity === "dragon" ? "עשר פגיעות! הדרקון ברח!" : activity === "table" ? "כל 100 התשובות נכונות!" : "כל שלוש הרמות הושלמו!";
+  $("completion-celebration-message").textContent = activity === "journey" ? (journeyComplete() ? "לוח הכפל, התרגול המהיר, השאלות המילוליות, המבוך ואתגר הדרקון — המסע הושלם!" : "הגביע שכבר השגת נשמר. אתגר הדרקון מחכה להרפתקה הבאה!") : "סיימת בהצלחה את " + ACTIVITY_NAMES[activity] + "!";
   dialog.showModal();
   positionCompletionCelebration();
   if (reduceMotion()) { showCompletionTrophy(); return; }
@@ -3009,7 +3086,209 @@ $("maze-restart").addEventListener("click", async () => {
   await rpc("maze_restart", { run_id: m.id }).catch((error) => actionError(error, "maze-status"));
 });
 
-const ACTIVITY_NAMES = { table: "לוח הכפל", quick: "תרגול מהיר", words: "שאלות מילוליות", maze: "המבוך" };
+const dragonUI = { runId:null, playerId:null, status:null, course:null, raf:null, lastTime:0,
+  keys:new Set(), pointers:new Map(), jump:false, timer:null, animation:null, shotKey:null, shooting:false };
+for (let i = 0; i < 10; i++) {
+  const s = DragonCourse.station(i);
+  if (s.y === DragonCourse.ground) continue;
+  const p = document.createElement("div"); p.className = "dragon-platform";
+  p.style.left = (s.x - 52) + "px"; p.style.top = s.y + "px";
+  $("dragon-platforms").append(p);
+}
+function clearDragonControls() { dragonUI.keys.clear(); dragonUI.pointers.clear(); dragonUI.jump = false; }
+function stopDragonScene() {
+  clearDragonControls(); cancelAnimationFrame(dragonUI.raf); dragonUI.raf = null;
+  clearTimeout(dragonUI.timer); dragonUI.timer = null;
+  dragonUI.animation?.cancel(); dragonUI.animation = null; dragonUI.shooting = false; dragonUI.shotKey = null;
+  $("dragon-spell").hidden = true; $("dragon-boss").classList.remove("struck", "fleeing");
+}
+function dragonCanMove() {
+  const d = snapshot?.runs.dragon;
+  return parentConsent && page === "dragon" && !document.hidden && d?.status === "active"
+    && !d.pending && !dragonUI.shooting && !document.querySelector("dialog[open]");
+}
+function paintDragon() {
+  const c = dragonUI.course, d = snapshot.runs.dragon;
+  if (!c || !d) return;
+  const width = $("dragon-viewport").clientWidth;
+  const camera = Math.max(0, Math.min(DragonCourse.width - width, c.x - width * .28));
+  $("dragon-world").style.transform = `translateX(${-camera}px)`;
+  $("dragon-runner").style.transform = `translate(${c.x}px,${c.y - 42}px)`;
+  const s = DragonCourse.station(d.index);
+  $("dragon-orb").style.left = (s.x - 18) + "px";
+  $("dragon-orb").style.top = (s.y - 42) + "px";
+  $("dragon-orb").hidden = d.pending || d.status !== "active";
+}
+function renderDragonRunner() {
+  const gender = snapshot.player.gender;
+  if ($("dragon-runner").dataset.gender === gender) return;
+  $("dragon-runner").dataset.gender = gender;
+  const girl = gender === "girl";
+  $("dragon-runner").innerHTML = `<svg viewBox="0 0 30 42" xmlns="http://www.w3.org/2000/svg">${girl ? '<path d="M5 11Q-2 20 3 28L9 23 10 12" fill="#643f30"/>' : ''}<path d="M10 28L9 38M20 28L22 38" stroke="#364c6a" stroke-width="5" stroke-linecap="round"/><path d="M8 39H13M21 39H26" stroke="#f9e6c0" stroke-width="4" stroke-linecap="round"/><path d="M9 22L5 29M21 22L26 27" stroke="#edb782" stroke-width="4" stroke-linecap="round"/><path d="M9 20H21L23 30H7Z" fill="${girl ? '#a16dd1' : '#2f9b90'}"/><circle cx="15" cy="12" r="10" fill="#edb782"/><path d="M5 12Q2 1 15 1Q28 1 25 12L20 6Q16 11 6 9" fill="#643f30"/><circle cx="12" cy="12" r="1.3" fill="#34354b"/><circle cx="20" cy="12" r="1.3" fill="#34354b"/><path d="M13 16Q16 19 20 16" fill="none" stroke="#9e5348" stroke-width="1.5" stroke-linecap="round"/>${girl ? '<path d="M4 6L1 3V10L4 7 7 10V3Z" fill="#e880a6"/>' : ''}</svg>`;
+}
+function dragonFrame(time) {
+  dragonUI.raf = null;
+  if (page !== "dragon" || !snapshot.runs.dragon || document.hidden) return;
+  const dt = dragonUI.lastTime ? (time - dragonUI.lastTime) / 1000 : 0;
+  dragonUI.lastTime = time;
+  if (dragonCanMove()) {
+    const controls = new Set([...dragonUI.keys, ...dragonUI.pointers.values()]);
+    const direction = Number(controls.has("right")) - Number(controls.has("left"));
+    dragonUI.course.step(dt, direction, dragonUI.jump); dragonUI.jump = false;
+    paintDragon();
+    if (dragonUI.course.reaches(snapshot.runs.dragon.index)) collectDragonQuestion();
+  } else clearDragonControls();
+  if (snapshot.runs.dragon?.status === "active" && dragonUI.raf === null) dragonUI.raf = requestAnimationFrame(dragonFrame);
+}
+function startDragonFrame() {
+  if (page === "dragon" && snapshot.runs.dragon?.status === "active" && !document.hidden && dragonUI.raf === null) {
+    dragonUI.lastTime = 0; dragonUI.raf = requestAnimationFrame(dragonFrame);
+  }
+}
+function collectDragonQuestion(shortcut = false) {
+  if (!dragonCanMove()) return;
+  const d = snapshot.runs.dragon;
+  clearDragonControls();
+  if (shortcut) {
+    const s = DragonCourse.station(d.index);
+    Object.assign(dragonUI.course, { x:s.x - 15, y:s.y, vy:0, grounded:true });
+  }
+  rpc("dragon_collect", {run_id:d.id}).catch(e => actionError(e, "dragon-status"));
+}
+function animateDragonHit(d) {
+  const key = `${d.id}:${d.index}`;
+  if (dragonUI.shotKey === key) return;
+  dragonUI.shotKey = key; dragonUI.shooting = true; clearDragonControls();
+  dragonUI.animation?.cancel(); dragonUI.animation = null;
+  const playerId = snapshot.player.id, final = d.hits === 10;
+  const current = () => page === "dragon" && snapshot.player.id === playerId && snapshot.runs.dragon?.id === d.id && dragonUI.shotKey === key;
+  const boss = $("dragon-boss"), spell = $("dragon-spell");
+  $("dragon-answer").blur();
+  $("dragon-viewport").scrollIntoView({block:"start", behavior:"instant"});
+  boss.hidden = false; boss.classList.remove("struck", "fleeing");
+  $("dragon-result").hidden = true;
+  status("dragon-status", `נכון! כדור קסם מספר ${d.hits} בדרך לדרקון ✨`, "success");
+  const impact = () => {
+    if (!current()) return;
+    spell.hidden = true; boss.classList.add("struck");
+    if (final) { boss.classList.add("fleeing"); status("dragon-status", "עשר פגיעות! הדרקון בורח! 🎉", "success"); }
+    dragonUI.timer = setTimeout(async () => {
+      dragonUI.timer = null;
+      if (!current()) return;
+      dragonUI.shooting = false; boss.classList.remove("struck", "fleeing");
+      if (final) { renderDragon(); celebrateCompletion("dragon"); }
+      else {
+        await rpc("dragon_next", {run_id:d.id, question_key:key}).catch(e => actionError(e, "dragon-status"));
+        if (current()) $("dragon-viewport").focus({preventScroll:true});
+      }
+    }, reduceMotion() ? 40 : final ? 1100 : 320);
+  };
+  if (reduceMotion()) { impact(); return; }
+  const view = $("dragon-viewport").getBoundingClientRect(), runner = $("dragon-runner").getBoundingClientRect(), target = boss.getBoundingClientRect();
+  spell.hidden = false;
+  dragonUI.animation = spell.animate([
+    {transform:`translate(${runner.left - view.left + 16}px,${runner.top - view.top}px) scale(.7)`},
+    {transform:`translate(${target.left - view.left + 28}px,${target.top - view.top + 40}px) scale(1.3)`}
+  ], {duration:560, easing:"ease-in", fill:"forwards"});
+  dragonUI.animation.finished.then(impact).catch(() => {});
+}
+function renderDragon() {
+  const d = snapshot.runs.dragon;
+  if (page !== "dragon") { stopDragonScene(); dragonUI.runId = null; dragonUI.status = null; return; }
+  const same = dragonUI.runId === d?.id && dragonUI.playerId === snapshot.player.id;
+  const wasActive = same && dragonUI.status === "active";
+  if (!same) {
+    stopDragonScene(); dragonUI.runId = d?.id || null; dragonUI.playerId = snapshot.player.id; dragonUI.status = null;
+    dragonUI.course = d ? new DragonCourse(d.index) : null;
+    if (d?.pending) { const s = DragonCourse.station(d.index); Object.assign(dragonUI.course, {x:s.x - 15, y:s.y}); }
+    questionKeys.dragon = null;
+  }
+  $("dragon-start").hidden = !!d; $("dragon-playfield").hidden = !d; $("dragon-restart").hidden = !d;
+  $("dragon-restart").disabled = !!d?.solved && d.status === "active";
+  $("dragon-hits").textContent = `${d?.hits || 0} / 10`;
+  if (!d) return;
+  $("dragon-meter").style.width = (d.hits * 10) + "%";
+  $("dragon-meter").setAttribute("aria-valuenow", d.hits);
+  renderDragonRunner();
+  $("dragon-form").hidden = !d.pending || d.solved || d.status !== "active";
+  $("dragon-result").hidden = d.status !== "passed" || dragonUI.shooting;
+  $("dragon-boss").hidden = d.status === "passed" && !dragonUI.shooting;
+  $("dragon-result-title").textContent = snapshot.player.name + genderText(" האלוף!", " האלופה!");
+  $("dragon-scene-label").textContent = d.status === "passed" ? "המסלול הושלם! ✨" : `תרגיל ${d.index + 1} מתוך 10 · ${d.hits} פגיעות`;
+  const blocked = d.pending || d.status !== "active";
+  document.querySelectorAll("[data-dragon-control]").forEach(b => b.disabled = blocked);
+  $("dragon-accessible-next").disabled = blocked;
+  if (d.pending && !d.solved) {
+    const q = d.question;
+    $("dragon-exercise").textContent = `${q.a} × ${q.b} = ?`;
+    $("dragon-hint").hidden = d.tries === 0;
+    $("dragon-hint").textContent = `רמז: ${q.b} קבוצות של ${q.a}. אפשר לחבר ${Array(q.b).fill(q.a).join(" + ")}.`;
+    if (questionKeys.dragon !== q.key) {
+      questionKeys.dragon = q.key; $("dragon-answer").value = "";
+      requestAnimationFrame(() => {
+        if (page !== "dragon" || snapshot.runs.dragon?.question?.key !== q.key || document.querySelector("dialog[open]")) return;
+        $("dragon-form").scrollIntoView({block:"nearest", behavior:"instant"});
+        $("dragon-answer").focus({preventScroll:true});
+      });
+    }
+    status("dragon-status", d.tries ? "עוד ניסיון קטן. הרמז כאן כדי לעזור — אין הגבלת זמן." : "תרגיל נאסף! פתרון נכון ישלח כדור קסם.");
+  } else if (!d.solved) status("dragon-status", genderText("התקדם ימינה וקפוץ אל כדור התרגיל ✨", "התקדמי ימינה וקפצי אל כדור התרגיל ✨"));
+  paintDragon();
+  if (d.solved && (d.status === "active" || wasActive)) animateDragonHit(d);
+  dragonUI.status = d.status;
+  startDragonFrame();
+}
+$("dragon-play").addEventListener("click", () => rpc("start", {activity:"dragon", level:0}).then(() => {
+  $("dragon-viewport").scrollIntoView({block:"start", behavior:"instant"}); $("dragon-viewport").focus({preventScroll:true});
+}).catch(e => actionError(e, "dragon-status")));
+$("dragon-accessible-next").addEventListener("click", () => collectDragonQuestion(true));
+$("dragon-form").addEventListener("submit", async e => {
+  e.preventDefault(); const d = snapshot.runs.dragon;
+  if (page !== "dragon" || !d?.pending || d.solved || d.status !== "active") return;
+  try {
+    await rpc("answer", {run_id:d.id, question_key:d.question.key, answer:$("dragon-answer").value});
+    if (!snapshot.runs.dragon.solved) $("dragon-answer").select();
+  } catch (error) { actionError(error, "dragon-status"); }
+});
+async function restartDragon() {
+  const d = snapshot.runs.dragon, playerId = snapshot.player.id;
+  if (!d) return;
+  if (d.status === "active" && !await askBeforeReset(genderText("האם תרצה לאפס את אתגר הדרקון?", "האם תרצי לאפס את אתגר הדרקון?"), {title:"איפוס האתגר", yesLabel:"כן", noLabel:"לא", noDanger:true})) return;
+  if (snapshot.player.id !== playerId || snapshot.runs.dragon?.id !== d.id) return;
+  await rpc("dragon_restart", {run_id:d.id}).catch(e => actionError(e, "dragon-status"));
+}
+$("dragon-restart").addEventListener("click", restartDragon);
+$("dragon-again").addEventListener("click", restartDragon);
+$("dragon-trophy").addEventListener("click", () => { if (snapshot.runs.dragon?.status === "passed") celebrateCompletion("dragon"); });
+document.querySelectorAll("[data-dragon-control]").forEach(button => {
+  button.addEventListener("pointerdown", e => {
+    if (!dragonCanMove()) return;
+    e.preventDefault(); button.setPointerCapture(e.pointerId);
+    if (button.dataset.dragonControl === "jump") dragonUI.jump = true;
+    else dragonUI.pointers.set(e.pointerId, button.dataset.dragonControl);
+  });
+  for (const event of ["pointerup", "pointercancel", "lostpointercapture"]) button.addEventListener(event, e => dragonUI.pointers.delete(e.pointerId));
+  button.addEventListener("click", e => {
+    if (e.detail || !dragonCanMove()) return;
+    const control = button.dataset.dragonControl;
+    if (control === "jump") dragonUI.jump = true;
+    else { dragonUI.course.step(.032, control === "right" ? 1 : -1, false); paintDragon(); }
+  });
+});
+const dragonKeys = {ArrowLeft:"left", ArrowRight:"right", ArrowUp:"jump", " ":"jump"};
+document.addEventListener("keydown", e => {
+  if (!dragonKeys[e.key] || !dragonCanMove() || e.altKey || e.ctrlKey || e.metaKey || e.target.matches("input,textarea,select,[contenteditable=true]") || (e.key === " " && e.target.closest("button"))) return;
+  e.preventDefault();
+  if (dragonKeys[e.key] === "jump") { if (!e.repeat) dragonUI.jump = true; }
+  else dragonUI.keys.add(dragonKeys[e.key]);
+});
+document.addEventListener("keyup", e => dragonUI.keys.delete(dragonKeys[e.key]));
+window.addEventListener("blur", clearDragonControls);
+document.addEventListener("visibilitychange", () => { clearDragonControls(); startDragonFrame(); });
+window.addEventListener("resize", () => { if (page === "dragon") paintDragon(); });
+new MutationObserver(() => { if (document.querySelector("dialog[open]")) clearDragonControls(); }).observe(document.body, {subtree:true, attributes:true, attributeFilter:["open"]});
+
+const ACTIVITY_NAMES = { table: "לוח הכפל", quick: "תרגול מהיר", words: "שאלות מילוליות", maze: "המבוך", dragon: "אתגר הדרקון" };
 let confirmResolve = null, progressView = "table";
 function askBeforeReset(text, {title = "מתחילים מחדש?", yesLabel = "כן, להמשיך", noLabel = "להישאר בסבב", noDanger = false} = {}) {
   $("confirm-title").textContent = title;
@@ -3059,6 +3338,9 @@ function renderPlayerWording() {
     [".activity:nth-child(2) p", "פתור תרגיל אחד בכל פעם, בקצב שלך. הקלד תשובה, קבל משוב וצבור נקודות.", "פתרי תרגיל אחד בכל פעם, בקצב שלך. הקלידי תשובה, קבלי משוב וצברי נקודות."],
     [".activity:nth-child(3) p", "גלה את הכפל בסיפורים קצרים. קרא, חשוב וענה על השאלה.", "גלי את הכפל בסיפורים קצרים. קראי, חשבי ועני על השאלה."],
     [".activity:nth-child(4) p", "התקדם עם החיצים ופתור שאלה בכל שלושה צעדים. השלם את שלוש הרמות וזכה בגביע!", "התקדמי עם החיצים ופתרי שאלה בכל שלושה צעדים. השלימי את שלוש הרמות וזכי בגביע!"],
+    [".activity:nth-child(5) p", "קפוץ בין הפלטפורמות, פתור תרגילים ושלח כדורי קסם. אחרי עשר פגיעות הדרקון בורח!", "קפצי בין הפלטפורמות, פתרי תרגילים ושלחי כדורי קסם. אחרי עשר פגיעות הדרקון בורח!"],
+    ["#dragon-intro", "התקדם, קפוץ ואסוף תרגילים. כל תשובה נכונה שולחת כדור קסם לדרקון. אין הגבלת זמן!", "התקדמי, קפצי ואספי תרגילים. כל תשובה נכונה שולחת כדור קסם לדרקון. אין הגבלת זמן!"],
+    ["#dragon-question-label", "פתור את התרגיל ושלח כדור קסם", "פתרי את התרגיל ושלחי כדור קסם"],
     ["#page-table .page-heading .tag", "תרגל בקצב שלך", "תרגלי בקצב שלך"],
     ["#page-table .page-heading p", "מלא גם רק חלק מהטבלה, ואז לחץ על בדיקת התשובות.", "מלאי גם רק חלק מהטבלה, ואז לחצי על בדיקת התשובות."],
     ["#page-quick .page-heading p, #page-words .page-heading p", "בכל רמה 20 שאלות. ענה והמשך בקצב שלך.", "בכל רמה 20 שאלות. עני והמשיכי בקצב שלך."],
@@ -3145,7 +3427,7 @@ document.querySelectorAll("[data-progress-view]").forEach(button => button.addEv
   progressView = button.dataset.progressView; renderProgress();
 }));
 function renderProgress() {
-  $("journey-open").hidden = !journeyComplete();
+  $("journey-open").hidden = !journeyAvailable();
   $("progress-player").textContent = snapshot.player.name;
   const all = Object.values(snapshot.stats), answered = all.reduce((sum, s) => sum + s.answered, 0),
     correct = all.reduce((sum, s) => sum + s.correct, 0), points = all.reduce((sum, s) => sum + s.points, 0);
@@ -3171,7 +3453,7 @@ function renderProgress() {
   $("progress-facts").innerHTML = facts.map(f => `<tr><th scope="row"><bdi>${f.a} × ${f.b}</bdi></th><td>${f.answered}</td><td>${f.correct}</td><td>${f.assisted}</td></tr>`).join("");
   const recent = [...snapshot.history].reverse().slice(0, 12);
   const reasons = { passed: "הושלם", retry: "ניסיון ראשון", reset: "RESET", level_change: "מעבר רמה", new_visit: "כניסה חדשה", legacy: "מהגרסה הקודמת" };
-  $("progress-history").innerHTML = recent.map(h => `<tr><td>${esc(new Date(h.at).toLocaleDateString("he-IL"))}</td><th scope="row">${ACTIVITY_NAMES[h.activity]}${h.activity === "table" ? "" : " · " + LEVEL_NAMES[h.level]}</th><td>${h.correct}/${h.completed}</td><td>${h.points}</td><td>${reasons[h.reason] || "סבב"}${h.recovery ? " · תרגול חוזר" : ""}</td></tr>`).join("");
+  $("progress-history").innerHTML = recent.map(h => `<tr><td>${esc(new Date(h.at).toLocaleDateString("he-IL"))}</td><th scope="row">${ACTIVITY_NAMES[h.activity]}${["table", "dragon"].includes(h.activity) ? "" : " · " + LEVEL_NAMES[h.level]}</th><td>${h.correct}/${h.completed}</td><td>${h.points}</td><td>${reasons[h.reason] || "סבב"}${h.recovery ? " · תרגול חוזר" : ""}</td></tr>`).join("");
   const advice = [];
   if (!answered) advice.push(genderText("התחל בכמה תרגילים. אחרי שתענה, יופיעו כאן עצות בשבילך.", "התחילי בכמה תרגילים. אחרי שתעני, יופיעו כאן עצות בשבילך."));
   else {
@@ -3240,6 +3522,7 @@ function applyAccessibility(save = false) {
   if (reduceMotion()) {
     clearTimeout(fireworkTimer);
     $("fireworks").replaceChildren();
+    if (dragonUI.animation?.playState === "running") dragonUI.animation.finish();
     if ($("completion-celebration").open) showCompletionTrophy();
   }
   if (save) try { window.localStorage.setItem(ACCESSIBILITY_KEY, JSON.stringify(accessibility)); } catch { /* In-memory settings remain active. */ }
