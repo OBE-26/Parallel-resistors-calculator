@@ -983,6 +983,10 @@ APP_HTML = r'''<!doctype html>
         filter: drop-shadow(0 12px 12px #0005);
         animation: trophy-bounce .9s ease-in-out 3;
       }
+      .journey-trophy { width: 240px; height: 315px; max-width: 100%; filter: drop-shadow(0 12px 16px #0006); animation: trophy-bounce .9s ease-in-out 3; }
+      .completion-celebration[data-activity=journey] .celebration-stage { height: 325px; }
+      .completion-celebration[data-activity=journey] .celebration-score { display: none; }
+      .completion-celebration[data-activity=journey] .celebration-card { width: min(100%, 600px); }
       @keyframes trophy-bounce {
         0%, 100% { transform: translateY(0) scale(1); }
         35% { transform: translateY(-22px) scale(1.08); }
@@ -1663,7 +1667,7 @@ APP_HTML = r'''<!doctype html>
         <p>במידה המותרת לפי הדין, המפעיל אינו מקבל על עצמו אחריות לנזקים עקיפים, תוצאתיים או לאובדן נתונים הנובעים מהסתמכות על המשחק, מהשבתתו, משימוש שאינו בהתאם לתנאים או מתקלות בשירותי צד שלישי שאינם בשליטתו. אין בתנאים כדי לפטור מאחריות שהדין אינו מאפשר לפטור ממנה, לגרוע מזכויות שאי אפשר להתנות עליהן או לשלול גישה לערכאות. בפרט, אין כאן פטור גורף מאחריות לנזק גוף או למעשה זדון.</p>
         <h3>5. פרטיות ונתוני המשחק</h3>
         <p>שם השחקן או הכינוי, בחירת בן/בת, הניקוד וההתקדמות נשמרים בדפדפן במכשיר שבו משחקים. אפשר לבחור כינוי; אין צורך למסור שם משפחה או תאריך לידה של ילד. מי שמשתמש באותו דפדפן עשוי לראות את הפרופילים. מחיקת נתוני האתר בדפדפן תמחק את המידע המקומי. אין בקוד המשחק בסיס נתונים של פרופילים או מנגנון לשליחתם לשרת.</p>
-        <p><strong>שם ההורה ותאריך הלידה בטופס שלמטה משמשים רק לבדיקת השדות ולהבעת האישור באותו רגע.</strong> קוד המשחק אינו שומר או שולח אותם, והם נמחקים מהטופס לאחר האישור או הביטול. נשמר בכרטיסייה רק סימון אישור לגרסת התנאים הנוכחית, ללא פרטי החתימה. ייתכן שספק האחסון והדפדפן מעבדים נתוני גישה טכניים לפי המדיניות שלהם.</p>
+        <p><strong>שם ההורה ותאריך הלידה בטופס שלמטה משמשים רק לבדיקת השדות ולהבעת האישור באותו רגע.</strong> קוד המשחק אינו שומר או שולח אותם, והם נמחקים מהטופס לאחר האישור או הביטול. בדפדפן במכשיר נשמר רק סימון אישור לגרסת התנאים הנוכחית, ללא פרטי החתימה. האישור משותף לכל השחקנים באותו דפדפן, ונשמר גם לאחר סגירת האתר וכניסה מחדש. מחיקת נתוני האתר, שימוש בדפדפן אחר או שינוי מהותי בגרסת התנאים יחייבו אישור מחדש. אם שמירת הדפדפן חסומה, האישור עשוי להישמר רק למשך הביקור. ייתכן שספק האחסון והדפדפן מעבדים נתוני גישה טכניים לפי המדיניות שלהם.</p>
         <h3>6. משמעות האישור</h3>
         <p>הקלדת השם, תאריך הלידה וסימון ההסכמה הם הצהרת ההורה שקרא והבין את התנאים ומאשר את השתתפות הילד. זהות המאשר אינה מאומתת; לא נשמר עותק חתום או רישום שניתן להסתמך עליו להוכחת החתימה. האישור אינו מבטל זכויות של ההורה או הילד שהדין מגן עליהן.</p>
         <h3>7. שינויים, דין ופניות</h3>
@@ -1704,6 +1708,7 @@ APP_HTML = r'''<!doctype html>
         <div class="celebration-score"><bdi id="completion-score">100 / 100</bdi></div>
         <div class="celebration-stage" aria-hidden="true">
           <svg class="winner-trophy" id="completion-trophy" viewBox="0 0 132 148" hidden>
+            <g id="trophy-cup">
             <path d="M35 22H15v22c0 22 15 34 35 34M97 22h20v22c0 22-15 34-35 34" fill="none" stroke="#ffcc47" stroke-width="10"/>
             <path d="M61 81h10v37H61z" fill="#e9a62b"/>
             <path d="M33 12h66v34c0 27-14 43-33 43S33 73 33 46z" fill="#ffc943"/>
@@ -1711,6 +1716,15 @@ APP_HTML = r'''<!doctype html>
             <path d="m66 29 6 12 14 2-10 10 2 14-12-7-12 7 2-14-10-10 14-2z" fill="#fff7c7"/>
             <path d="M44 112h44l8 13H36z" fill="#ffc943"/>
             <rect x="28" y="125" width="76" height="16" rx="5" fill="#d99220"/>
+            </g>
+          </svg>
+          <svg class="journey-trophy" id="journey-trophy" viewBox="0 0 240 315" hidden>
+            <g fill="#ffdc73" stroke="#fff3bd" stroke-width="2" stroke-linejoin="round">
+              <path class="journey-star" transform="translate(40 62)" d="m0-22 7 15 17 2-12 12 3 17-15-8-15 8 3-17-12-12 17-2z"/>
+              <path class="journey-star" transform="translate(120 30) scale(1.15)" d="m0-22 7 15 17 2-12 12 3 17-15-8-15 8 3-17-12-12 17-2z"/>
+              <path class="journey-star" transform="translate(200 62)" d="m0-22 7 15 17 2-12 12 3 17-15-8-15 8 3-17-12-12 17-2z"/>
+            </g>
+            <use href="#trophy-cup" transform="translate(28 95) scale(1.4)"/>
           </svg>
         </div>
         <p class="celebration-champion" id="completion-champion" hidden></p>
@@ -1761,7 +1775,9 @@ class PersonalGame {
     return { runs: { table: null, quick: null, words: null, maze: null },
       unlocked: { quick: 0, words: 0, maze: 0 }, sessionToken: null,
       stats: Object.fromEntries(PersonalGame.activities.map(a => [a, this.emptyStats()])),
-      facts: {}, history: [], lastDecks: {} };
+      facts: {}, history: [], lastDecks: {},
+      completedActivities: Object.fromEntries(PersonalGame.activities.map(a => [a, false])),
+      journeyCelebrated: false };
   }
   restore(saved) {
     const state = this.fresh();
@@ -1786,6 +1802,16 @@ class PersonalGame {
       Number.isFinite(h.correct) && Number.isFinite(h.completed) && Number.isFinite(h.points)).slice(-120) : [];
     state.sessionToken = typeof saved.sessionToken === "string" ? saved.sessionToken : null;
     if (saved.lastDecks && typeof saved.lastDecks === "object") state.lastDecks = saved.lastDecks;
+    // Recover earlier achievements from saved runs/history before a new visit
+    // replaces current runs. Keep the flags independently of the history limit.
+    for (const a of PersonalGame.activities) {
+      const run = state.runs[a];
+      const completedRun = run?.status === "passed" && (a === "table" ? run.completed === 100 : run.level === 2);
+      const completedHistory = state.history.some(h => h.activity === a && h.reason === "passed"
+        && (a === "table" ? h.completed === 100 && h.correct === 100 : h.level === 2));
+      state.completedActivities[a] = saved.completedActivities?.[a] === true || completedRun || completedHistory;
+    }
+    state.journeyCelebrated = saved.journeyCelebrated === true && PersonalGame.activities.every(a => state.completedActivities[a]);
     return state;
   }
   migrateLegacy() {
@@ -2001,6 +2027,8 @@ class PersonalGame {
     run.status = run.score >= 80 || (run.activity === "maze" && run.recovery) ? "passed" : "retry";
     if (run.status === "passed" && run.activity !== "table")
       this.state.unlocked[run.activity] = Math.max(this.state.unlocked[run.activity], Math.min(2, run.level + 1));
+    if (run.status === "passed" && (run.activity === "table" ? run.completed === 100 : run.level === 2))
+      this.state.completedActivities[run.activity] = true;
     this.archive(run, run.status);
   }
   mazeFinish(run) {
@@ -2082,6 +2110,11 @@ class PersonalGame {
   perform(action, payload = {}) {
     let celebrate = false;
     if (action === "player") this.selectPlayer(payload);
+    else if (action === "journey_seen") {
+      if (!PersonalGame.activities.every(a => this.state.completedActivities[a]))
+        throw new Error("קודם משלימים את כל ארבע הפעילויות כדי לקבל את גביע המסע.");
+      this.state.journeyCelebrated = true;
+    }
     else if (action === "reset") this.reset();
     else if (action === "start") {
       const { activity, level } = payload;
@@ -2324,7 +2357,13 @@ function fireworks() {
   fireworkTimer = setTimeout(() => layer.replaceChildren(), 2900);
 }
 
-let completionCelebrationTimer = null;
+let completionCelebrationTimer = null, journeyTransitionTimer = null;
+function journeyComplete() { return PersonalGame.activities.every(a => snapshot.completedActivities[a]); }
+function journeyPending() { return journeyComplete() && !snapshot.journeyCelebrated; }
+function maybeCelebrateJourney() {
+  if (parentConsent && !snapshot.player.needsName && !snapshot.player.needsGender
+      && journeyPending() && !document.querySelector("dialog[open]")) celebrateCompletion("journey");
+}
 function showCompletionTrophy() {
   clearTimeout(completionCelebrationTimer);
   completionCelebrationTimer = null;
@@ -2332,10 +2371,25 @@ function showCompletionTrophy() {
   if (!dialog.open) return;
   $("completion-celebration-fireworks").replaceChildren();
   dialog.dataset.phase = "trophy";
-  $("completion-trophy").removeAttribute("hidden");
+  const journey = dialog.dataset.activity === "journey";
+  $(journey ? "journey-trophy" : "completion-trophy").removeAttribute("hidden");
   $("completion-champion").hidden = false;
-  $("completion-celebration-title").textContent = "הגביע שלך!";
-  $("completion-celebration-message").textContent = "כל הכבוד על ההתמדה וההצלחה!";
+  $("completion-celebration-title").textContent = journey ? "גביע המסע שלך!" : "הגביע שלך!";
+  $("completion-celebration-message").textContent = journey
+    ? genderText("אין עליך! עברת מסע מאתגר. אתה מקבל את הגביע על הדרך שעברת. היידד!",
+      "אין עלייך! עברת מסע מאתגר. את מקבלת את הגביע על הדרך שעברת. היידד!")
+    : "כל הכבוד על ההתמדה וההצלחה!";
+  if (journey) {
+    snapshot = game.perform("journey_seen").snapshot;
+    storageNotice();
+  } else if (journeyPending()) {
+    $("completion-celebration-done").textContent = "אל גביע המסע ⭐";
+    const playerId = snapshot.player.id;
+    clearTimeout(journeyTransitionTimer);
+    journeyTransitionTimer = setTimeout(() => {
+      if (dialog.open && snapshot.player.id === playerId && journeyPending()) celebrateCompletion("journey");
+    }, 4200);
+  }
 }
 function positionCompletionCelebration() {
   const dialog = $("completion-celebration");
@@ -2353,11 +2407,14 @@ function positionCompletionCelebration() {
 }
 function closeCompletionCelebration() {
   clearTimeout(completionCelebrationTimer);
+  clearTimeout(journeyTransitionTimer);
   completionCelebrationTimer = null;
+  journeyTransitionTimer = null;
   $("completion-celebration-fireworks").replaceChildren();
   if ($("completion-celebration").open) $("completion-celebration").close();
 }
 function celebrateCompletion(activity) {
+  if (activity === "journey" && !journeyComplete()) return;
   closeCompletionCelebration();
   clearTimeout(fireworkTimer);
   $("fireworks").replaceChildren();
@@ -2365,11 +2422,13 @@ function celebrateCompletion(activity) {
   dialog.dataset.phase = "fireworks";
   dialog.dataset.activity = activity;
   $("completion-trophy").setAttribute("hidden", "");
+  $("journey-trophy").setAttribute("hidden", "");
+  $("completion-celebration-done").textContent = "להמשיך";
   $("completion-champion").hidden = true;
   $("completion-champion").textContent = snapshot.player.name + genderText(" האלוף!", " האלופה!");
-  $("completion-score").textContent = activity === "table" ? "100 / 100" : "3 / 3";
-  $("completion-celebration-title").textContent = activity === "table" ? "כל 100 התשובות נכונות!" : "כל שלוש הרמות הושלמו!";
-  $("completion-celebration-message").textContent = "סיימת בהצלחה את " + ACTIVITY_NAMES[activity] + "!";
+  $("completion-score").textContent = activity === "journey" ? "4 / 4" : activity === "table" ? "100 / 100" : "3 / 3";
+  $("completion-celebration-title").textContent = activity === "journey" ? "כל המשחקים הושלמו!" : activity === "table" ? "כל 100 התשובות נכונות!" : "כל שלוש הרמות הושלמו!";
+  $("completion-celebration-message").textContent = activity === "journey" ? "לוח הכפל, התרגול המהיר, השאלות המילוליות והמבוך — המסע הושלם!" : "סיימת בהצלחה את " + ACTIVITY_NAMES[activity] + "!";
   dialog.showModal();
   positionCompletionCelebration();
   if (reduceMotion()) { showCompletionTrophy(); return; }
@@ -2388,7 +2447,10 @@ function celebrateCompletion(activity) {
   completionCelebrationTimer = setTimeout(showCompletionTrophy, 3200);
 }
 $("completion-celebration-close").addEventListener("click", closeCompletionCelebration);
-$("completion-celebration-done").addEventListener("click", closeCompletionCelebration);
+$("completion-celebration-done").addEventListener("click", () => {
+  if ($("completion-celebration").dataset.activity !== "journey" && journeyPending()) celebrateCompletion("journey");
+  else closeCompletionCelebration();
+});
 $("completion-celebration").addEventListener("close", () => {
   // A queued close event from an older celebration must not close a new one.
   if (!$("completion-celebration").open) closeCompletionCelebration();
@@ -3051,7 +3113,7 @@ async function changePlayer(payload) {
     await rpc("player", payload);
     dirty = false; draftRun = null; questionKeys = {}; lastMazePending = false;
     status("table-status", ""); status("maze-status", "");
-    $("players-dialog").close(); navigate("home");
+    $("players-dialog").close(); navigate("home"); maybeCelebrateJourney();
   } catch (error) { $("player-error").textContent = error.message; }
 }
 $("player-select-form").addEventListener("submit", event => {
@@ -3072,10 +3134,18 @@ $("reset-game").addEventListener("click", async () => {
 });
 $("progress-open").addEventListener("click", () => { $("progress-dialog").showModal(); renderProgress(); });
 $("progress-close").addEventListener("click", () => $("progress-dialog").close());
+const journeyButton = document.createElement("button");
+journeyButton.id = "journey-open";
+journeyButton.className = "btn soft";
+journeyButton.textContent = "🏆 גביע סיום המסע";
+journeyButton.hidden = true;
+$("progress-dialog").querySelector(".dialog-top").after(journeyButton);
+journeyButton.addEventListener("click", () => { $("progress-dialog").close(); celebrateCompletion("journey"); });
 document.querySelectorAll("[data-progress-view]").forEach(button => button.addEventListener("click", () => {
   progressView = button.dataset.progressView; renderProgress();
 }));
 function renderProgress() {
+  $("journey-open").hidden = !journeyComplete();
   $("progress-player").textContent = snapshot.player.name;
   const all = Object.values(snapshot.stats), answered = all.reduce((sum, s) => sum + s.answered, 0),
     correct = all.reduce((sum, s) => sum + s.correct, 0), points = all.reduce((sum, s) => sum + s.points, 0);
@@ -3126,6 +3196,28 @@ function renderProgress() {
 // These preferences contain no player or parent identity.
 const ACCESSIBILITY_KEY = "shaked.accessibility.v1";
 const TERMS_KEY = "shaked.parent-consent.v1", TERMS_VERSION = "2026-09-23.1";
+function rememberParentConsent() {
+  // One non-identifying marker per browser, shared by every player and visit.
+  try {
+    window.localStorage.setItem(TERMS_KEY, TERMS_VERSION);
+    try { window.sessionStorage.removeItem(TERMS_KEY); } catch { /* Local consent is already saved. */ }
+    return;
+  } catch { /* If persistent storage is blocked, keep this visit usable. */ }
+  try { window.sessionStorage.setItem(TERMS_KEY, TERMS_VERSION + ":" + game.sessionToken); }
+  catch { /* In-memory consent remains valid until this page closes. */ }
+}
+function readParentConsent() {
+  try { if (window.localStorage.getItem(TERMS_KEY) === TERMS_VERSION) return true; }
+  catch { /* Check the visit fallback below. */ }
+  // Upgrade an approval from the previous version without requesting it again.
+  try {
+    if (window.sessionStorage.getItem(TERMS_KEY) === TERMS_VERSION + ":" + game.sessionToken) {
+      rememberParentConsent();
+      return true;
+    }
+  } catch { /* No saved approval is available. */ }
+  return false;
+}
 const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
 let accessibility = { scale: 1, contrast: false, motion: false, links: false };
 try {
@@ -3222,8 +3314,17 @@ function enterGame() {
   $("app").inert = false;
   $("app").removeAttribute("aria-hidden");
   if (snapshot.player.needsName || snapshot.player.needsGender) openPlayers();
+  else maybeCelebrateJourney();
   resizeFrame();
 }
+window.addEventListener("storage", event => {
+  if (event.key !== TERMS_KEY || event.newValue !== TERMS_VERSION || parentConsent) return;
+  // An approval in another open tab applies here as well.
+  parentConsent = true;
+  clearParentFields();
+  if ($("terms-dialog").open) $("terms-dialog").close();
+  enterGame();
+});
 function declineTerms() {
   clearParentFields();
   $("terms-dialog").close();
@@ -3261,7 +3362,7 @@ $("parent-consent-form").addEventListener("submit", event => {
   if (!$("parent-agreement").checked) return invalid("parent-agreement", "כדי להיכנס נדרש לסמן שקראת והסכמת לתנאים.");
   parentConsent = true;
   // Never persist the name or birth date, nor include them in game actions/messages.
-  try { window.sessionStorage.setItem(TERMS_KEY, TERMS_VERSION + ":" + game.sessionToken); } catch { /* Consent lasts in memory for this visit. */ }
+  rememberParentConsent();
   clearParentFields();
   $("terms-dialog").close();
   enterGame();
@@ -3284,7 +3385,7 @@ createTable();
 renderAll();
 storageNotice();
 applyAccessibility();
-try { parentConsent = window.sessionStorage.getItem(TERMS_KEY) === TERMS_VERSION + ":" + game.sessionToken; } catch { /* Ask again if storage is blocked. */ }
+parentConsent = readParentConsent();
 if (parentConsent) enterGame(); else openTerms();
 window.addEventListener("pagehide", () => { clearParentFields(); if (parentConsent && dirty) flushTable().catch(() => {}); });
 
