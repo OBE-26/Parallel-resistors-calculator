@@ -1493,7 +1493,7 @@ APP_HTML = r'''<!doctype html>
     <div class="start-prompt" id="quick-start">בּוֹחֲרִים רָמָה פְּתוּחָה וּמַתְחִילִים סֶבֶב שֶׁל <bdi>20</bdi> שְׁאֵלוֹת.</div>
     <div class="panel quiz-card" id="quick-card" hidden><div class="session-heading"><span class="quiz-meta" id="quick-progress-label"></span><span class="score-pill">נכון עד ניסיון שלישי <bdi id="quick-first">0</bdi></span></div>
     <div class="quiz-progress"><div id="quick-progress-fill"></div></div><div id="quick-question-area"><div class="math" id="quick-exercise"></div>
-    <form class="answer-form" id="quick-form" novalidate><label for="quick-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="quick-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="quick-submit" type="submit">בְּדִיקָה</button></div></form>
+    <form class="answer-form" id="quick-form" novalidate><label for="quick-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="quick-answer" class="numeric" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="quick-submit" type="submit">בְּדִיקָה</button></div></form>
     <div class="status" id="quick-status" role="status"></div><div class="revealed-answer" id="quick-reveal" hidden><strong>נִלְמַד יַחַד אֶת הַתְּשׁוּבָה:</strong><div class="math" id="quick-solution"></div><span>נַקְלִיד אֶת הַתְּשׁוּבָה הַנְּכוֹנָה בַּשָּׂדֶה כְּדֵי לְהַמְשִׁיךְ.</span></div>
     <div class="actions"><button class="btn secondary" id="quick-next" disabled>לַשְּׁאֵלָה הַבָּאָה ←</button></div></div><div id="quick-result" class="result-card" hidden></div></div>
     </section><section class="page" id="page-words" hidden aria-labelledby="words-title"><div class="page-heading"><span class="tag">מָאתַיִם סִפּוּרִים, שָׁלוֹשׁ רָמוֹת</span><h2 id="words-title">שְׁאֵלוֹת מִלּוּלִיּוֹת</h2><p>בְּכָל רָמָה <bdi>20</bdi> שְׁאֵלוֹת. עוֹנִים נָכוֹן וּמַמְשִׁיכִים, בַּקֶּצֶב שֶׁלָּנוּ.</p></div>
@@ -1501,7 +1501,7 @@ APP_HTML = r'''<!doctype html>
     <div class="start-prompt" id="words-start">בּוֹחֲרִים רָמָה פְּתוּחָה וּמַתְחִילִים סֶבֶב שֶׁל <bdi>20</bdi> שְׁאֵלוֹת.</div>
     <div class="panel quiz-card" id="words-card" hidden><div class="session-heading"><span class="quiz-meta" id="words-progress-label"></span><span class="score-pill">נכון עד ניסיון שלישי <bdi id="words-first">0</bdi></span></div>
     <div class="quiz-progress"><div id="words-progress-fill"></div></div><div id="words-question-area"><p class="word-question" id="words-question"></p>
-    <form class="answer-form" id="words-form" novalidate><label for="words-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="words-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="words-submit" type="submit">בְּדִיקָה</button></div></form>
+    <form class="answer-form" id="words-form" novalidate><label for="words-answer">הַתְּשׁוּבָה שֶׁלָּנוּ</label><div class="answer-line"><input id="words-answer" class="numeric" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" id="words-submit" type="submit">בְּדִיקָה</button></div></form>
     <div class="status" id="words-status" role="status"></div><div class="revealed-answer" id="words-reveal" hidden><strong>נִלְמַד יַחַד אֶת הַתְּשׁוּבָה:</strong><div class="math" id="words-solution"></div><span>נַקְלִיד אֶת הַתְּשׁוּבָה הַנְּכוֹנָה בַּשָּׂדֶה כְּדֵי לְהַמְשִׁיךְ.</span></div>
     <div class="actions"><button class="btn secondary" id="words-next" disabled>לַשְּׁאֵלָה הַבָּאָה ←</button></div></div><div id="words-result" class="result-card" hidden></div></div>
     </section>      <section id="page-maze" class="page" hidden aria-labelledby="maze-title">
@@ -1560,7 +1560,7 @@ APP_HTML = r'''<!doctype html>
                         <input
                           id="maze-answer"
                           class="numeric"
-                          type="text"
+                          type="tel"
                           inputmode="numeric"
                           pattern="[0-9]*"
                           maxlength="3"
@@ -1623,7 +1623,7 @@ APP_HTML = r'''<!doctype html>
             <button class="text-link dragon-shortcut" id="dragon-accessible-next">אל התרגיל הבא בלי קפיצה</button>
             <form id="dragon-form" class="dragon-question" hidden novalidate>
               <label for="dragon-answer" id="dragon-question-label"></label><div class="math" id="dragon-exercise"></div>
-              <div class="answer-line"><input id="dragon-answer" class="numeric" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" type="submit" id="dragon-submit">שליחת קסם ✨</button></div>
+              <div class="answer-line"><input id="dragon-answer" class="numeric" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" dir="ltr" autocomplete="off"><button class="btn" type="submit" id="dragon-submit">שליחת קסם ✨</button></div>
               <p id="dragon-hint" class="dragon-hint" hidden></p>
             </form>
             <div id="dragon-status" class="status" role="status" aria-live="polite"></div>
@@ -2558,7 +2558,8 @@ function createTable() {
         const i = (r - 1) * 10 + c - 1;
         cell.id = "cell-" + i;
         const input = document.createElement("input");
-        input.type = "text";
+        // Telephone inputs provide a digit keypad fallback if inputmode is ignored.
+        input.type = "tel";
         input.inputMode = "numeric";
         input.pattern = "[0-9]*";
         input.maxLength = 3;
